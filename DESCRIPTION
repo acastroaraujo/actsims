@@ -1,9 +1,9 @@
 Package: actsims
-Title: What the Package Does (One Line, Title Case)
+Title: inteRact using R6
 Version: 0.0.0.9000
 Authors@R: 
     person("andrés", "castro araújo", , "andres.castro.araujo@duke.edu", role = c("aut", "cre"))
-Description: What the package does (one paragraph).
+Description: inteRact, but using R6
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -16,3 +16,5 @@ Imports:
 Depends: 
     R (>= 2.10)
 LazyData: true
+URL: https://github.com/acastroaraujo/actsims
+BugReports: https://github.com/acastroaraujo/actsims/issues
