@@ -3,13 +3,14 @@ Title: inteRact using R6
 Version: 0.0.0.9000
 Authors@R: 
     person("andrés", "castro araújo", , "andres.castro.araujo@duke.edu", role = c("aut", "cre"))
-Description: inteRact, but using R6
+Description: inteRact, but using R6.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.1
 Imports: 
     dplyr,
+    Matrix,
     purrr,
     R6,
     rlang

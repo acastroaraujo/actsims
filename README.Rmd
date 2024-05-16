@@ -39,34 +39,34 @@ This is a basic example which shows you how to solve a common problem:
 library(tidyverse)
 library(actsims)
 
+
 ## create an InteRact class
 act <- interact(dictionary = "usfullsurveyor2015", equations = "us2010")
 act # custom print
 
 # calculate deflection for specific ABOs in dictionary
-act$deflection(list(A = "abortionist", B = "kill", O = "abortionist"))
+act$deflection(list(A = "deadbeat", B = "kill", O = "god"))
+act$deflection(list(A = "deadbeat", B = "kill", O = "deadbeat"))
 
 # create a grid of specific AB0s
-events <- crossing(
-  A = act$dictionary |> filter(component == "identity") |> pull(term),
-  B = c("kill", "aid"),
-  O = act$dictionary |> filter(component == "identity") |> pull(term)
+events <- tidyr::crossing(
+  A = act$dictionary |> dplyr::filter(component == "identity") |> dplyr::pull(term),
+  B = act$dictionary |> dplyr::filter(component == "behavior") |> dplyr::pull(term) |> sample(3),
+  O = act$dictionary |> dplyr::filter(component == "identity") |> dplyr::pull(term)
 ) 
+
 
 # calculate deflection for grid
 events$d <- act$deflection(events)
 
-# low deflection
-events |> 
-  arrange(d) |> 
-  head()
+str(events)
 
-# high deflection
-events |> 
-  arrange(desc(d)) |> 
-  head()
+# act$optimal_behavior()
+# act$reidentify_actor()
+# act$reidentify_object()
+# act$nearest_neighbors()
+# act$transient_impressions()
 
-# high deflection?
-act$deflection(list(A = "hero", B = "kill", O = "wife_abuser"))
 ```
+
 

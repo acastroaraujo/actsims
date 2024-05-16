@@ -76,13 +76,14 @@ get_equation <- function(key = "us2010", group = "all") {
 
   out <- as.matrix(eq_df[, -1])
   rownames(out) <- coef_dict[eq_df$V1]
+  colnames(out) <- paste0(rep(c("A", "B", "O"), each = 3), rep(c("e", "p", "a"), times = 3))
   return(out)
 
 }
 
 stack_epa_ratings <- function(events, dict) {
 
-  stopifnot(all(purrr::map_lgl(events, \(x) class(x) == "character")))
+  stopifnot(all(purrr::map_lgl(c("A", "B", "O"), \(x) class(events[[x]]) == "character")))
 
   mat <- do.call(rbind, dict[["ratings"]])
   rownames(mat) <- dict[["term"]]
@@ -101,7 +102,7 @@ stack_epa_ratings <- function(events, dict) {
 
 get_data_matrix <- function(data, eq) {
   terms <- rownames(eq)[-1]
-  form <- stats::reformulate(paste(terms, sep = "+"))
+  form <- stats::reformulate(terms)
   X <- stats::model.matrix(form, data = as.data.frame(data))
   return(X)
 }

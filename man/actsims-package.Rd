@@ -4,9 +4,17 @@
 \name{actsims-package}
 \alias{actsims}
 \alias{actsims-package}
-\title{actsims: What the Package Does (One Line, Title Case)}
+\title{actsims: inteRact using R6}
 \description{
-What the package does (one paragraph).
+inteRact, but using R6.
+}
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://github.com/acastroaraujo/actsims}
+  \item Report bugs at \url{https://github.com/acastroaraujo/actsims/issues}
+}
+
 }
 \author{
 \strong{Maintainer}: andrés castro araújo \email{andres.castro.araujo@duke.edu}
