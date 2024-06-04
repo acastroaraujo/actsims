@@ -15,7 +15,10 @@ Imports:
     R6,
     rlang
 Depends: 
+    actdata (>= 0.0.0.9005),
     R (>= 2.10)
 LazyData: true
 URL: https://github.com/acastroaraujo/actsims
 BugReports: https://github.com/acastroaraujo/actsims/issues
+Remotes:  
+    ahcombs/actdata

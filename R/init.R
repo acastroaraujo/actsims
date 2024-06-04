@@ -6,14 +6,14 @@
 #' Set up and interact object.
 #'
 #' @param dictionary dictionary name.
-#' @param equations equation name.
+#' @param equation equation name.
 #'
 #' @return an "InteRact" object.
 #'
 #' @export
 #'
-interact <- function(dictionary, equations) {
-  InteRact$new(dictionary, equations)
+interact <- function(dictionary, equation) {
+  InteRact$new(dictionary, equation)
 }
 
 
@@ -22,13 +22,13 @@ InteRact <- R6::R6Class(
 
   public = list(
     dictionary = NULL,
-    equations = NULL,
+    equation = NULL,
 
-    initialize = function(dictionary = match.arg(dictionaries), equations) {
+    initialize = function(dictionary = "usfullsurveyor2015", equation = "us2010") {
 
-      self$dictionary <- usfullsurveyor2015 ## modify to be compatible with multiple dicts
-      self$equations <- get_equation(key = equations, group = "all")
-      private$info <- list(group = "all", dict = dictionary, eq = equations)
+      self$dictionary <- get_dictionary(dataset = dictionary)
+      self$equation <- get_equation(key = equation, group = "all")
+      private$info <- list(group = "all", dict = dictionary, eq = equation)
 
     },
 
@@ -36,7 +36,7 @@ InteRact <- R6::R6Class(
 
       cat("<Dictionary>: ", private$info$dict, "\n")
       cat("    group   : ", private$info$group, "\n")
-      cat("<Equations> : ", private$info$eq, "\n")
+      cat("<Equation>  : ", private$info$eq, "\n")
 
     }
   ),
@@ -50,20 +50,22 @@ InteRact$set(
   "public", "deflection",
   function(events) {
     epa_matrix <- stack_epa_ratings(events, self$dictionary)
-    X <- get_data_matrix(epa_matrix, self$equations)
-    t <- X %*% self$equations                 ## get transient impressions
-    deflection <- rowSums((t - epa_matrix)^2) ## get deflection
-    return(as.vector(deflection))
+    X <- get_data_matrix(epa_matrix, self$equation)
+    transients <- X %*% self$equation
+    element_wise_deflection <- (transients - epa_matrix)^2
+    deflection <- as.vector(rowSums(element_wise_deflection))
+    out <- structure(deflection, class = "deflection", element_wise_deflection = element_wise_deflection, transients = transients)
+    return(out)
 })
 
 get_actor <- function(events, dict, eq) {
 
-  f <- stack_epa_ratings(events, dict)
-  X <- get_data_matrix(f, eq)
-  t <- X %*% eq
-  f[grepl("B", colnames(f))] <- 1
-  t[grepl("B", colnames(t))] <- 1
-  cbind(f, get_data_matrix(t, eq))
+  fundamentals <- stack_epa_ratings(events, dict)
+  X <- get_data_matrix(fundamentals, eq)
+  transients <- X %*% eq
+  fundamentals[grepl("B", colnames(fundamentals))] <- 1
+  transients[grepl("B", colnames(transients))] <- 1
+  cbind(fundamentals, get_data_matrix(transients, eq))
 
 }
 
@@ -71,11 +73,11 @@ InteRact$set(
   "public", "optimal_behavior",
   function(events, who = c("actor", "object")) {
     #who <- match.arg(who) ## FINISH THE ACTOR VS OBJECT
-    data <- get_actor(events, self$dictionary, self$equations)
+    data <- get_actor(events, self$dictionary, self$equation)
     Ib <- apply(data, 1, diag, simplify = FALSE)
 
-    identity <- diag(ncol(self$equations))
-    h <- rbind(identity, -1*self$equations) %*% cbind(identity, -1*t(self$equations))
+    identity <- diag(ncol(self$equation))
+    h <- rbind(identity, -1*self$equation) %*% cbind(identity, -1*t(self$equation))
 
     S <- matrix(0, ncol = 3, nrow = ncol(data)) ## selection matrix
 
@@ -103,12 +105,12 @@ InteRact$set(
 
 get_object <- function(events, dict, eq) {
 
-  f <- stack_epa_ratings(events, dict)
-  X <- get_data_matrix(f, eq)
-  t <- X %*% eq
-  f[grepl("O", colnames(f))] <- 1
-  t[grepl("O", colnames(t))] <- 1
-  cbind(f, get_data_matrix(t, eq))
+  fundamentals <- stack_epa_ratings(events, dict)
+  X <- get_data_matrix(fundamentals, eq)
+  transients <- X %*% eq
+  fundamentals[grepl("O", colnames(fundamentals))] <- 1
+  transients[grepl("O", colnames(transients))] <- 1
+  cbind(fundamentals, get_data_matrix(transients, eq))
 
 }
 
@@ -116,11 +118,11 @@ InteRact$set(
   "public", "reidentify_object",
   function(events) {
 
-    data <- get_object(events, self$dictionary, self$equations)
+    data <- get_object(events, self$dictionary, self$equation)
     Ib <- apply(data, 1, diag, simplify = FALSE)
 
-    identity <- diag(ncol(self$equations))
-    h <- rbind(identity, -1*self$equations) %*% cbind(identity, -1*t(self$equations))
+    identity <- diag(ncol(self$equation))
+    h <- rbind(identity, -1*self$equation) %*% cbind(identity, -1*t(self$equation))
 
     S <- matrix(0, ncol = 3, nrow = ncol(data)) ## selection matrix
 
