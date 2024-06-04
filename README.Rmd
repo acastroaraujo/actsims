@@ -20,7 +20,9 @@ knitr::opts_chunk$set(
 <!-- badges: start -->
 <!-- badges: end -->
 
-The goal of actsims is to ...
+`actsims` is an ACT package used for internal development of  `interactShiny`
+
+It is not meant for public consumption.
 
 ## Installation
 
@@ -31,23 +33,52 @@ You can install the development version of actsims like so:
 devtools::install_github("acastroaraujo/actsims")
 ```
 
-## Example
+## Performance
 
-This is a basic example which shows you how to solve a common problem:
+-   `actsims` is easy to use and it is meant to be fast.
+-   It uses the R6 OOP system.
+-   It is integrated with the `acdata` package.
+
+Create an inteRact object.
 
 ```{r example, message=FALSE}
-library(tidyverse)
 library(actsims)
+suppressMessages(library(tidyverse))
 
-
-## create an InteRact class
-act <- interact(dictionary = "usfullsurveyor2015", equations = "us2010")
+act <- interact(dictionary = "usfullsurveyor2015", equation = "us2010")
+class(act)
 act # custom print
+```
 
-# calculate deflection for specific ABOs in dictionary
+This object comes with built in functions. 
+
+Deflection scores.
+
+```{r}
 act$deflection(list(A = "deadbeat", B = "kill", O = "god"))
 act$deflection(list(A = "deadbeat", B = "kill", O = "deadbeat"))
+```
 
+You can also extract useful metadata from these scores.
+
+```{r}
+d <- act$deflection(list(A = "ceo", B = "advise", O = "benefactor"))
+d
+get_fundamentals(d)
+get_transients(d)
+get_element_wise_deflection(d)
+```
+
+You can also do other stuff.
+
+```{r}
+act$reidentify_object(list(A = "ceo", B = "advise", O = "benefactor"))
+act$optimal_behavior(list(A = "ceo", B = "advise", O = "benefactor"), who = "actor")
+```
+
+And you can use a grid of events to estimate multiple deflection scores simultaneously.
+
+```{r}
 # create a grid of specific AB0s
 events <- tidyr::crossing(
   A = act$dictionary |> dplyr::filter(component == "identity") |> dplyr::pull(term),
@@ -55,18 +86,11 @@ events <- tidyr::crossing(
   O = act$dictionary |> dplyr::filter(component == "identity") |> dplyr::pull(term)
 ) 
 
+glimpse(events)
 
 # calculate deflection for grid
 events$d <- act$deflection(events)
 
-str(events)
-
-# act$optimal_behavior()
-# act$reidentify_actor()
-# act$reidentify_object()
-# act$nearest_neighbors()
-# act$transient_impressions()
-
+events
 ```
-
 

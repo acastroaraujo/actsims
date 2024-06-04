@@ -1,7 +1,9 @@
 
 
-##### rename equations matrix columns
-###### see if you can make stack_epa_ratings faster
+# To do:
+# - see if you can make stack_epa_ratings faster
+# - add method for adding custom ratings
+# - stop reusing stuff for the other stuff (you know what I mean)
 
 #' Set up and interact object.
 #'
@@ -21,59 +23,72 @@ InteRact <- R6::R6Class(
   classname = "InteRact",
 
   public = list(
-    dictionary = NULL,
-    equation = NULL,
-
     initialize = function(dictionary = "usfullsurveyor2015", equation = "us2010") {
 
-      self$dictionary <- get_dictionary(dataset = dictionary)
+      private$.dictionary <- get_dictionary(dataset = dictionary)
       self$equation <- get_equation(key = equation, group = "all")
-      private$info <- list(group = "all", dict = dictionary, eq = equation)
+
+      # for printing
+      private$.dict <- dictionary
+      private$.group <- "all"
+      private$.eq <- equation
 
     },
 
+    equation = NULL,
     print = function(...) {
 
-      cat("<Dictionary>: ", private$info$dict, "\n")
-      cat("    group   : ", private$info$group, "\n")
-      cat("<Equation>  : ", private$info$eq, "\n")
+      cat("<Dictionary>: ", private$.dict, "\n")
+      cat("    group   : ", private$.group, "\n")
+      cat("<Equation>  : ", private$.eq, "\n")
 
     }
   ),
 
+  active = list(
+    dictionary = function(value) {
+      if (missing(value)) {
+        private$.dictionary
+      } else {
+        validate_new_dictionary(value)
+        private$.dictionary <- value
+        private$.dict <- "External [!]"
+      }
+    }
+  ),
+
   private = list(
-    info = NULL
+    .dictionary = NULL,
+    .dict = NULL,
+    .group = NULL,
+    .eq = NULL
   )
 )
 
 InteRact$set(
   "public", "deflection",
   function(events) {
-    epa_matrix <- stack_epa_ratings(events, self$dictionary)
-    X <- get_data_matrix(epa_matrix, self$equation)
+    fundamentals <- stack_epa_ratings(events, private$.dictionary)
+    X <- get_data_matrix(fundamentals, self$equation)
     transients <- X %*% self$equation
-    element_wise_deflection <- (transients - epa_matrix)^2
+    element_wise_deflection <- (transients - fundamentals)^2
     deflection <- as.vector(rowSums(element_wise_deflection))
-    out <- structure(deflection, class = "deflection", element_wise_deflection = element_wise_deflection, transients = transients)
-    return(out)
+
+    # output
+    structure(
+      deflection,
+      class = "deflection",
+      element_wise_deflection = element_wise_deflection,
+      transients = transients,
+      fundamentals = fundamentals
+    )
 })
-
-get_actor <- function(events, dict, eq) {
-
-  fundamentals <- stack_epa_ratings(events, dict)
-  X <- get_data_matrix(fundamentals, eq)
-  transients <- X %*% eq
-  fundamentals[grepl("B", colnames(fundamentals))] <- 1
-  transients[grepl("B", colnames(transients))] <- 1
-  cbind(fundamentals, get_data_matrix(transients, eq))
-
-}
 
 InteRact$set(
   "public", "optimal_behavior",
   function(events, who = c("actor", "object")) {
     #who <- match.arg(who) ## FINISH THE ACTOR VS OBJECT
-    data <- get_actor(events, self$dictionary, self$equation)
+    data <- get_actor(events, private$.dictionary, self$equation)
     Ib <- apply(data, 1, diag, simplify = FALSE)
 
     identity <- diag(ncol(self$equation))
@@ -103,22 +118,11 @@ InteRact$set(
 
 # reidentify object -------------------------------------------------------
 
-get_object <- function(events, dict, eq) {
-
-  fundamentals <- stack_epa_ratings(events, dict)
-  X <- get_data_matrix(fundamentals, eq)
-  transients <- X %*% eq
-  fundamentals[grepl("O", colnames(fundamentals))] <- 1
-  transients[grepl("O", colnames(transients))] <- 1
-  cbind(fundamentals, get_data_matrix(transients, eq))
-
-}
-
 InteRact$set(
   "public", "reidentify_object",
   function(events) {
 
-    data <- get_object(events, self$dictionary, self$equation)
+    data <- get_object(events, private$.dictionary, self$equation)
     Ib <- apply(data, 1, diag, simplify = FALSE)
 
     identity <- diag(ncol(self$equation))
@@ -146,10 +150,6 @@ InteRact$set(
 
   })
 
-## Matrix has bdiag function
-
-
-
 # Closest Term ------------------------------------------------------------
 
 InteRact$set(
@@ -158,7 +158,7 @@ InteRact$set(
 
     x <- match.arg(component)
 
-    lookup <- self$dictionary[self$dictionary$component == x, ]
+    lookup <- private$.dictionary[private$.dictionary$component == x, ]
     dict_epa <- do.call(rbind, lookup$ratings)
     rownames(dict_epa) <- lookup$term
 

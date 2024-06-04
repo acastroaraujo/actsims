@@ -8,15 +8,14 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.1
-Imports: 
-    dplyr,
-    Matrix,
-    purrr,
-    R6,
-    rlang
 Depends: 
     actdata (>= 0.0.0.9005),
     R (>= 2.10)
+Imports: 
+    dplyr,
+    purrr,
+    R6,
+    rlang
 LazyData: true
 URL: https://github.com/acastroaraujo/actsims
 BugReports: https://github.com/acastroaraujo/actsims/issues

@@ -1,4 +1,5 @@
 
+#' @import actdata
 
 coef_dict <- c(
   "Z000000000" = "(Intercept)",
@@ -67,14 +68,12 @@ coef_dict <- c(
   "Z001001001" = "Aa:Ba:Oa"
 )
 
-
-
 get_dictionary <- function(dataset = "usfullsurveyor2015") {
 
   dict <- match.arg(dataset, actdata::dataset_keys())
 
   actdata::epa_subset(dataset = dict) |>
-    dplyr::filter(group == "all") |>
+    dplyr::filter(.data$group == "all") |>
     dplyr::rename_all(tolower) |>
     dplyr::rowwise() |>
     dplyr::mutate(ratings = list(c(e = .data$e, p = .data$p, a = .data$a))) |>

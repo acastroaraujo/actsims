@@ -4,12 +4,12 @@
 \alias{interact}
 \title{Set up and interact object.}
 \usage{
-interact(dictionary, equations)
+interact(dictionary, equation)
 }
 \arguments{
 \item{dictionary}{dictionary name.}
 
-\item{equations}{equation name.}
+\item{equation}{equation name.}
 }
 \value{
 an "InteRact" object.
