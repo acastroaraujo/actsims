@@ -4,18 +4,26 @@
 \alias{build_interact}
 \title{Create a new InteRact object}
 \usage{
-build_interact(dictionary = "usfullsurveyor2015", equation = "us2010")
+build_interact(
+  dictionary = "usfullsurveyor2015",
+  equation = "us2010",
+  group = "all"
+)
 }
 \arguments{
 \item{dictionary}{(character) dictionary name.
 
-See available options using \code{\link[actdata:dataset_keys]{actdata::dataset_keys()}}}
+See available options using \code{\link[actdata:dataset_keys]{actdata::dataset_keys()}}
+
+Currently only dictionaries that have "\code{group == all}" are valid.}
 
 \item{equation}{(character) equation name.
 
 See available options using \code{\link[actdata:equations]{actdata::equations}}
 
-Currently only equations that have "\code{group = all}" are implemented.}
+Currently only equations that have "\code{equation_type == impressionabo}" are valid.}
+
+\item{group}{(character) one of "all" (default), "male", or "female." This specifies the equation type.}
 }
 \value{
 An \code{\link{InteRact}} object.

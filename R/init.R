@@ -18,17 +18,21 @@
 #'
 #' See available options using [`actdata::dataset_keys()`]
 #'
+#' Currently only dictionaries that have "`group == all`" are valid.
+#'
 #' @param equation (character) equation name.
 #'
 #' See available options using [`actdata::equations`]
 #'
-#' Currently only equations that have "`group = all`" are implemented.
+#' Currently only equations that have "`equation_type == impressionabo`" are valid.
+#'
+#' @param group (character) one of "all" (default), "male", or "female." This specifies the equation type.
 #'
 #' @return An [`InteRact`] object.
 #'
 #' @export
-build_interact <- function(dictionary = "usfullsurveyor2015", equation = "us2010") {
-  InteRact$new(dictionary, equation)
+build_interact <- function(dictionary = "usfullsurveyor2015", equation = "us2010", group = "all") {
+  InteRact$new(dictionary, equation, group)
 }
 
 # InteRact ----------------------------------------------------------------
@@ -60,18 +64,21 @@ InteRact <- R6::R6Class(
   classname = "InteRact",
 
   public = list(
-    initialize = function(dictionary = "usfullsurveyor2015", equation = "us2010") {
+    initialize = function(dictionary = "usfullsurveyor2015", equation = "us2010", group = "all") {
       private$.dictionary <- get_dictionary(dataset = dictionary)
-      self$equation <- get_equation(key = equation, group = "all")
+      self$equation <- get_equation(key = equation, group = group)
       private$.dict <- dictionary  ## this is
-      private$.group <- "all"      ## for
+      private$.group <- group      ## for
       private$.eq <- equation      ## printing only
     },
     print = function() {
       cli::cli_h1("Interact Analysis")
       cli::cli_alert_info("Dictionary: {private$.dict}")
-      cli::cli_alert_info("group: {private$.group}")
+      cli::cli_alert("group: all")
       cli::cli_alert_info("Equations: {private$.eq}")
+      cli::cli_alert("group: {private$.group}")
+      cli::cli_alert("type: impressionabo")
+
     },
     equation = NULL
   ),

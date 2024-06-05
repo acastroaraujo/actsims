@@ -84,11 +84,16 @@ get_dictionary <- function(dataset = "usfullsurveyor2015") {
 
 }
 
-get_equation <- function(key = "us2010", group = "all") {
+get_equation <- function(key = "us2010", group = c("all", "female", "male")) {
 
-  #key <- match.arg(key, unique(actdata::equations[["key"]]))
+  key <- match.arg(key, unique(actdata::equations[["key"]]))
+  group <- match.arg(group)
 
-  key <- match.arg(key, c("egypt2014", "germany2007", "morocco2015", "us2010"))
+  ok <- any(actdata::equations$key == key & actdata::equations$group == group & actdata::equations$equation_type == "impressionabo")
+
+  if (!ok) {
+    stop(call. = FALSE, paste0("No equation with key (", key, "), group (", group, "), and equation_type (impressionabo)"))
+  }
 
   eq_df <- actdata::equations |>
     dplyr::filter(.data$key == !!key, .data$equation_type == "impressionabo", .data$group == !!group) |>

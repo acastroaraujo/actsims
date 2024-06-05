@@ -1,5 +1,5 @@
 
-act <- build_interact(dictionary = "usfullsurveyor2015", equation = "us2010")
+act <- build_interact(dictionary = "usfullsurveyor2015", equation = "us2010", group = "all")
 events <- data.frame(A = "mother", B = "abandon", O = "child")
 d <- act$deflection(events)
 
