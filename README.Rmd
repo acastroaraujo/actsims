@@ -20,11 +20,13 @@ knitr::opts_chunk$set(
 <!-- badges: start -->
 <!-- badges: end -->
 
-`actsims` is an ACT package used for internal development of  `interactShiny`
+`actsims` is an ACT package used for internal development of `interactShiny`
 
-It is not meant for public consumption.
+**It is not meant for public consumption.**
 
 ## Installation
+
+However, if you must insist...
 
 You can install the development version of actsims like so:
 
@@ -35,19 +37,18 @@ devtools::install_github("acastroaraujo/actsims")
 
 ## Performance
 
--   `actsims` is easy to use and it is meant to be fast.
--   It uses the R6 OOP system.
--   It is integrated with the `acdata` package.
+-   `actsims` is meant to be fast and easy to use.
+-   It uses the R6 OOP system to keep better track of EPA ratings and transient impression equations.
+-   It is integrated with the `actdata` package.
 
-Create an inteRact object.
+Create an "InteRact" R6 object.
 
-```{r example, message=FALSE}
+```{r example}
 library(actsims)
 suppressMessages(library(tidyverse))
 
-act <- interact(dictionary = "usfullsurveyor2015", equation = "us2010")
-class(act)
-act # custom print
+act <- build_interact(dictionary = "usfullsurveyor2015", equation = "us2010")
+act
 ```
 
 This object comes with built in functions. 
@@ -69,14 +70,17 @@ get_transients(d)
 get_element_wise_deflection(d)
 ```
 
-You can also do other stuff.
+You can also do other stuff (more to come).
 
 ```{r}
-act$reidentify_object(list(A = "ceo", B = "advise", O = "benefactor"))
-act$optimal_behavior(list(A = "ceo", B = "advise", O = "benefactor"), who = "actor")
+act$reidentify_object(d)
 ```
 
-And you can use a grid of events to estimate multiple deflection scores simultaneously.
+## Many many
+
+You can use a grid of events to estimate multiple deflection scores simultaneously.
+
+For example, the following `events` object contains more than 2 million ABO events randomly created from the `usfullsurveyor2015` dictionary. 
 
 ```{r}
 # create a grid of specific AB0s
@@ -87,10 +91,65 @@ events <- tidyr::crossing(
 ) 
 
 glimpse(events)
+```
 
-# calculate deflection for grid
-events$d <- act$deflection(events)
+Now you can repeat the earlier steps. 
 
-events
+```{r}
+d <- act$deflection(events)
+d
+```
+
+## Deference Score
+
+You can also create the deference scores discussed by Freeland & Hoey (2018). But this requires to set up a new dictionary. 
+
+Which you'll have to do with the help of external packages.
+
+This is just way to do this. 
+
+```{r}
+occupation_ratings <- actdata::epa_subset(dataset = "occs2019") |> 
+  dplyr::select(term, component, E, P, A) |> 
+  dplyr::rename_all(tolower) |> 
+  dplyr::rowwise() |> 
+  dplyr::mutate(ratings = list(c(e = e, p = p, a = a))) |> 
+  dplyr::ungroup() |> 
+  dplyr::select(term, component, ratings)
+
+occupation_ratings
+
+defer_to <- act$dictionary |> 
+  dplyr::filter(term == "defer_to")
+```
+
+Then you'll have to replace the original dictionary.
+
+```{r}
+act$dictionary <- dplyr::bind_rows(defer_to, occupation_ratings)
+```
+
+Note that a message appeared signaling that the replacement was succesful.
+
+```{r}
+act
+```
+
+Now you just create another grid of events, calculate the deflection scores, and average over the As.
+
+```{r}
+events <- crossing(
+  A = occupation_ratings$term,
+  B = "defer_to",
+  O = occupation_ratings$term
+)
+
+output <- act$deflection(events)
+
+output |> 
+  filter(A != O) |> 
+  group_by(A) |> 
+  summarize(avg = mean(deflection)) |> 
+  arrange(desc(avg)) 
 ```
 

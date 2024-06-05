@@ -4,7 +4,7 @@ validate_new_dictionary <- function(dict) {
   ok <- all(c("term", "ratings") %in% colnames(dict))
   if (!ok) stop(call. = FALSE, "New dictionary must be a data frame with <term> and <ratings> columns")
 
-  ok <- all(map_lgl(dict$ratings, \(x) all(names(x) == c("e", "p", "a"))))
+  ok <- all(purrr::map_lgl(dict$ratings, \(x) all(names(x) == c("e", "p", "a"))))
   if (!ok) stop(call. = FALSE, "The ratings column must be a named list of epa ratings")
 
 }
@@ -35,59 +35,30 @@ get_data_matrix <- function(data, eq) {
   return(X)
 }
 
-get_actor <- function(events, dict, eq) {
-
-  fundamentals <- stack_epa_ratings(events, dict)
-  X <- get_data_matrix(fundamentals, eq)
-  transients <- X %*% eq
-  fundamentals[grepl("B", colnames(fundamentals))] <- 1
-  transients[grepl("B", colnames(transients))] <- 1
-  cbind(fundamentals, get_data_matrix(transients, eq))
-
-}
-
-get_object <- function(events, dict, eq) {
-
-  fundamentals <- stack_epa_ratings(events, dict)
-  X <- get_data_matrix(fundamentals, eq)
-  transients <- X %*% eq
+get_object <- function(d, eq) {
+  fundamentals <- get_fundamentals(d)
+  transients <- get_transients(d)
   fundamentals[grepl("O", colnames(fundamentals))] <- 1
   transients[grepl("O", colnames(transients))] <- 1
   cbind(fundamentals, get_data_matrix(transients, eq))
-
 }
 
+get_actor <- function(d, dict, eq) {
+  fundamentals <- get_fundamentals(d)
+  transients <- get_transients(d)
+  fundamentals[grepl("B", colnames(fundamentals))] <- 1
+  transients[grepl("B", colnames(transients))] <- 1
+  cbind(fundamentals, get_data_matrix(transients, eq))
+}
+
+## there's still some repetition here... I could wrap the <- 1 assignments
+## in a switch statement
 
 # Print Methods -----------------------------------------------------------
 
-
 #' @export
-print.deflection <- function(x, ...) {
-  cat("Deflection Scores", "\n")
-  print.default(as.vector(x), digits = 3, ...)
+tbl_format_header.event_deflection <- function(x, setup, ...) {
+  c(cli::col_blue("# Event deflection"), cli::col_blue("# A data frame: ", setup$tbl_sum))
 }
 
-
-# Deflection Attributes ---------------------------------------------------
-
-#' Get Deflection Score Attributes
-#'
-#' Fundamentals, transients, and element-wise deflection.
-#'
-#' @param x a deflection score
-#'
-#' @return A matrix object containing either fundamentals, transients, or element-wise deflection scores
-#' @export
-
-#' @export
-#' @rdname deflection_attributes
-get_fundamentals <- purrr::attr_getter("fundamentals")
-
-#' @export
-#' @rdname deflection_attributes
-get_transients <- purrr::attr_getter("transients")
-
-#' @export
-#' @rdname deflection_attributes
-get_element_wise_deflection <- purrr::attr_getter("element_wise_deflection")
 

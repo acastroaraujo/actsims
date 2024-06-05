@@ -1,48 +1,79 @@
 
-
 # To do:
 # - see if you can make stack_epa_ratings faster
-# - add method for adding custom ratings
 # - stop reusing stuff for the other stuff (you know what I mean)
+# - bulk for maximally likely behaviors
+# - see why Event Deflection header doesn't knit with proper color
+# - document R6 methods following the cmdstanr convention
+#.  https://roxygen2.r-lib.org/articles/rd-other.html#r6
+# - Add more informative errors for when people use non event_deflection objects
 
-#' Set up and interact object.
+#' @title Create a new InteRact object
 #'
-#' @param dictionary dictionary name.
-#' @param equation equation name.
+#' @description
+#' Create a new [`InteRact`] by specifying dictionary and
+#' equation names available from the `actdata` package.
 #'
-#' @return an "InteRact" object.
+#' @param dictionary (character) dictionary name.
+#'
+#' See available options using [`actdata::dataset_keys()`]
+#'
+#' @param equation (character) equation name.
+#'
+#' See available options using [`actdata::equations`]
+#'
+#' Currently only equations that have "`group = all`" are implemented.
+#'
+#' @return An [`InteRact`] object.
 #'
 #' @export
-#'
-interact <- function(dictionary, equation) {
+build_interact <- function(dictionary = "usfullsurveyor2015", equation = "us2010") {
   InteRact$new(dictionary, equation)
 }
 
+# InteRact ----------------------------------------------------------------
 
+#' @title InteRact Objects
+#'
+#' @name InteRact
+#' @description An `InteRact` object is an [R6][R6::R6Class] object created
+#'   by the [build_interact()] function.
+#'
+#'   The object stores (1) a dictionary of EPA ratings
+#'   or "fundamentals" and (2) an ACT equation used to calculate "transient impressions."
+#'
+#'   It also provides methods for calculating deflection scores, behaviors, reidentification,
+#'   among others.
+#'
+#' @section Methods: `InteRact` objects have the following associated
+#'   methods, many of which have their own (linked) documentation pages:
+#'
+#'  |**Method**|**Description**|
+#'  |:----------|:---------------|
+#'  [`$deflection()`][method-deflection] | Return an "Event Deflection" data frame. |
+#'  `$optimal_behavior()` | Return... |
+#'  `$reidentify_object()`| Return... |
+#'  `$closest_terms()`|  Return... |
+#'
+#'
 InteRact <- R6::R6Class(
   classname = "InteRact",
 
   public = list(
     initialize = function(dictionary = "usfullsurveyor2015", equation = "us2010") {
-
       private$.dictionary <- get_dictionary(dataset = dictionary)
       self$equation <- get_equation(key = equation, group = "all")
-
-      # for printing
-      private$.dict <- dictionary
-      private$.group <- "all"
-      private$.eq <- equation
-
+      private$.dict <- dictionary  ## this is
+      private$.group <- "all"      ## for
+      private$.eq <- equation      ## printing only
     },
-
-    equation = NULL,
-    print = function(...) {
-
-      cat("<Dictionary>: ", private$.dict, "\n")
-      cat("    group   : ", private$.group, "\n")
-      cat("<Equation>  : ", private$.eq, "\n")
-
-    }
+    print = function() {
+      cli::cli_h1("Interact Analysis")
+      cli::cli_alert_info("Dictionary: {private$.dict}")
+      cli::cli_alert_info("group: {private$.group}")
+      cli::cli_alert_info("Equations: {private$.eq}")
+    },
+    equation = NULL
   ),
 
   active = list(
@@ -51,6 +82,7 @@ InteRact <- R6::R6Class(
         private$.dictionary
       } else {
         validate_new_dictionary(value)
+        cli::cli_alert_success("added new dictionary")
         private$.dictionary <- value
         private$.dict <- "External [!]"
       }
@@ -63,26 +95,54 @@ InteRact <- R6::R6Class(
     .group = NULL,
     .eq = NULL
   )
+
 )
 
+# deflection --------------------------------------------------------------
+
+#' @title Calculate Event Deflection Scores
+#'
+#' @name method-deflection
+#' @aliases deflection
+#' @family InteRact methods
+#'
+#' @description The `$deflection()` method does this and that..
+#'
+#' @param events a data frame with A, B, and O
+#'
+#' Each has to exist within the `$dictionary` field
+#'
+#' @seealso [get_transients()], [get_fundamentals()], [get_element_wise_deflection()]
+#'
+#' @examples
+#' \dontrun{
+#' act <- interact_obj(dictionary = "usfullsurveyor2015", equation = "us2010")
+#' d <- act$deflection(events = data.frame(A = "mother", B = "abandon", O = "baby"))
+#' d
+#'}
 InteRact$set(
   "public", "deflection",
   function(events) {
+
     fundamentals <- stack_epa_ratings(events, private$.dictionary)
     X <- get_data_matrix(fundamentals, self$equation)
     transients <- X %*% self$equation
     element_wise_deflection <- (transients - fundamentals)^2
-    deflection <- as.vector(rowSums(element_wise_deflection))
+    events$deflection <- as.vector(rowSums(element_wise_deflection))
+    events <- dplyr::as_tibble(events)
 
     # output
     structure(
-      deflection,
-      class = "deflection",
-      element_wise_deflection = element_wise_deflection,
-      transients = transients,
-      fundamentals = fundamentals
+      events,
+      class = c("event_deflection", class(events)),
+      element_wise_deflection = dplyr::as_tibble(element_wise_deflection),
+      transients = dplyr::as_tibble(transients),
+      fundamentals = dplyr::as_tibble(fundamentals)
     )
 })
+
+
+# optimal behavior --------------------------------------------------------
 
 InteRact$set(
   "public", "optimal_behavior",
@@ -122,7 +182,9 @@ InteRact$set(
   "public", "reidentify_object",
   function(events) {
 
-    data <- get_object(events, private$.dictionary, self$equation)
+    stopifnot(inherits(events, "event_deflection"))
+
+    data <- get_object(events, self$equation)
     Ib <- apply(data, 1, diag, simplify = FALSE)
 
     identity <- diag(ncol(self$equation))
@@ -146,7 +208,7 @@ InteRact$set(
 
     })
 
-    do.call(rbind, out)
+    dplyr::as_tibble(do.call(rbind, out))
 
   })
 
@@ -173,6 +235,9 @@ InteRact$set(
     return(out)
 
 })
+
+
+# Maximally Confirm Behavior ----------------------------------------------
 
 
 
