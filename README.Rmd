@@ -23,11 +23,7 @@ knitr::opts_chunk$set(
 
 `actsims` is an ACT package used for internal development of `interactShiny`
 
-**It is not meant for public consumption.**
-
 ## Installation
-
-However, if you must insist...
 
 You can install the development version of actsims like so:
 
@@ -38,7 +34,7 @@ devtools::install_github("acastroaraujo/actsims")
 
 ## Usage
 
--   `actsims` is meant to be fast and easy to use.
+-   `actsims` is meant to be _fast_ and _easy_ to use.
 -   It uses the R6 OOP system to keep better track of EPA ratings and transient impression equations.
 -   It is integrated with the `actdata` package.
 
@@ -54,14 +50,14 @@ act$equations
 act$dictionary
 ```
 
-## Methods
-
 This object comes with built in methods which you can access via the `$` operator. 
+
+## Methods
 
 __Deflection scores.__
 
 ```{r}
-d <- act$deflection(list(A = "god", B = "kill", O = "deadbeat"))
+d <- act$deflection(data.frame(A = "god", B = "kill", O = "deadbeat"))
 d
 ```
 
@@ -76,27 +72,27 @@ get_element_wise_deflection(d)
 __Behaviors__
 
 ```{r}
-act$optimal_behavior_actor(d)
-act$optimal_behavior_object(d)
+act$optimal_behavior(d, who = "actor")
+act$optimal_behavior(d, who = "object")
 ```
 
 __Re-identification__
 
 ```{r}
-act$reidentify_actor(d)
-act$reidentify_object(d)
+act$reidentify(d, who = "actor")
+act$reidentify(d, who = "object")
 ```
 
 __Solve For...__
 
 ```{r}
 act$max_confirm(
-  events = data.frame(A = "god", O = "deadbeat"), 
+  events = tibble(A = "god", O = "deadbeat"), 
   solve_for = "behavior"
 ) 
 
 act$max_confirm(
-  events = data.frame(A = "god", B = "kill"), 
+  events = list(A = "god", B = "kill"), 
   solve_for = "object"
 ) 
 
@@ -122,20 +118,20 @@ act$closest_terms(epa = deadbeat, component = "modifier", max_dist = 0.5)
 
 You can use a grid of events to estimate multiple deflection scores simultaneously.
 
-For example, the following `events` object contains more than 2 million ABO events randomly created from the `usfullsurveyor2015` dictionary. 
+For example, the following `events` object contains 4 million ABO events randomly created from the `usfullsurveyor2015` dictionary. 
 
 ```{r}
 # create a grid of specific AB0s
 events <- tidyr::crossing(
-  A = act$dictionary |> dplyr::filter(component == "identity") |> dplyr::pull(term),
-  B = act$dictionary |> dplyr::filter(component == "behavior") |> dplyr::pull(term) |> sample(3),
-  O = act$dictionary |> dplyr::filter(component == "identity") |> dplyr::pull(term)
+  A = dplyr::filter(act$dictionary, component == "identity")[["term"]] |> sample(200),
+  B = dplyr::filter(act$dictionary, component == "behavior")[["term"]] |> sample(100),
+  O = dplyr::filter(act$dictionary, component == "identity")[["term"]] |> sample(200)
 ) 
 
 glimpse(events)
 ```
 
-Every method, with the exception of `$closest_terms()`, is designed to work in bulk. However, only the `$deflection()` method will work fast with millions of observations. Other methods might require a few minutes...
+Every method, with the exception of `$closest_terms()`, is designed to work in bulk. However, only the `$deflection()` method will work fast with millions of observations. Other methods might require a minute or so...
 
 ```{r}
 d <- act$deflection(events)
@@ -160,15 +156,11 @@ occupation_ratings <- actdata::epa_subset(dataset = "occs2019") |>
   dplyr::ungroup() |> 
   dplyr::select(term, component, ratings)
 
-occupation_ratings
-
 defer_to <- act$dictionary |> 
   dplyr::filter(term == "defer_to")
-```
 
-Then you'll have to replace the original dictionary.
+# Then you'll have to replace the original dictionary.
 
-```{r}
 act$dictionary <- dplyr::bind_rows(defer_to, occupation_ratings)
 ```
 
@@ -181,7 +173,7 @@ act
 Now you just create another grid of events, calculate the deflection scores, and average over the As.
 
 ```{r}
-events <- crossing(
+events <- tidyr::crossing(
   A = occupation_ratings$term,
   B = "defer_to",
   O = occupation_ratings$term
@@ -194,4 +186,6 @@ output |>
   summarize(avg = mean(deflection), sd = sd(deflection)) |> 
   arrange(desc(avg)) 
 ```
+
+
 

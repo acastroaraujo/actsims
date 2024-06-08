@@ -18,12 +18,10 @@ among others.
 methods, many of which have their own (linked) documentation pages:\tabular{ll}{
    \strong{Method} \tab \strong{Description} \cr
    \code{\link[=method-deflection]{$deflection()}} \tab Return an "Event Deflection" data frame. \cr
-   \code{\link[=method-optimal-behavior-actor]{$optimal_behavior_actor()}} \tab Return... \cr
-   \code{\link[=method-optimal-behavior-object]{$optimal_behavior_object()}} \tab Return... \cr
-   \verb{$reidentify_actor()} \tab Return... \cr
-   \verb{$reidentify_object()} \tab Return... \cr
-   \verb{$closest_terms()} \tab Return... \cr
-   \code{\link[=method-max-confirm]{$max_confirm()}} \tab Return... \cr
+   \code{\link[=method-optimal-behavior]{$optimal_behavior()}} \tab Calculate optimal behavior following an event \cr
+   \code{\link[=method-reidentify]{$reidentify()}} \tab Reidentify either actor or object following an event \cr
+   \code{\link[=method-max-confirm]{$max_confirm()}} \tab Solve for... from a pairing of "actor," "object," or "behavior" \cr
+   \code{\link[=method-closest-terms]{$closest_terms()}} \tab Return closest terms in \verb{$dictionary} to an EPA profile \cr
 }
 }
 

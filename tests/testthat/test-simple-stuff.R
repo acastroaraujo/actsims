@@ -1,6 +1,13 @@
 
 
 test_that("ceo abuse god", {
+
+  ## The Java App settings are
+  ## - Culture: USA Combined Surveyor 2015
+  ## - Mode: Gender Comparison
+  ## - Both Person 1 and Person 2 are set to male
+  ## - The equations are U.S.A. 2010 (but double check, cause the app is buggy)
+
   act <- interact(dictionary = "usfullsurveyor2015", equations = "us2010", group = "all")
   events <- data.frame(A = "ceo", B = "abuse", O = "god")
   d <- act$deflection(events)
@@ -11,26 +18,26 @@ test_that("ceo abuse god", {
 
   expect_equal(
     ## corresponds to Actor Labels in Java app
-    object = act$reidentify_actor(d) |> round(3),
+    object = act$reidentify(d, who = "actor") |> round(3),
     expected = dplyr::tibble(Ae = -0.941, Ap = -0.085, Aa = -0.72)
   )
 
   expect_equal(
     ## corresponds to Object Labels in Java app
-    object = act$reidentify_object(d) |> round(3),
+    object = act$reidentify(d, who = "object") |> round(3),
     expected = dplyr::tibble(Oe = -0.491, Op = -3.605, Oa = -2.196)
   )
 
   expect_equal(
     ## corresponds to Actor Behaviors in Java App
-    object = act$optimal_behavior_actor(d) |> round(3),
+    object = act$optimal_behavior(d, who = "actor") |> round(3),
     expected = dplyr::tibble(Be = -0.193, Bp = -0.175, Ba = 1.592)
   )
 
   expect_equal(
     ## corresponds to Object Behaviors in Java App
-    object = act$optimal_behavior_actor(d) |> round(3),
-    expected = dplyr::tibble(Be = -0.193, Bp = -0.175, Ba = 1.592)
+    object = act$optimal_behavior(d, who = "object") |> round(3),
+    expected = dplyr::tibble(Be = 2.85, Bp = 5.422, Ba = -1.458)
   )
 
   out <- act$max_confirm(events = list(A = "army_enlistee", O = "american"), solve_for = "behavior")

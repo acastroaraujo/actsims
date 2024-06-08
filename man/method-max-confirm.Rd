@@ -19,7 +19,7 @@ The \verb{$max_confirm()} method does this and that..
 Other InteRactModel methods: 
 \code{\link{method-closest-terms}},
 \code{\link{method-deflection}},
-\code{\link{method-optimal-behavior-actor}},
-\code{\link{method-optimal-behavior-object}}
+\code{\link{method-optimal-behavior}},
+\code{\link{method-reidentify}}
 }
 \concept{InteRactModel methods}

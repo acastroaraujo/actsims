@@ -11,11 +11,7 @@
 `actsims` is an ACT package used for internal development of
 `interactShiny`
 
-**It is not meant for public consumption.**
-
 ## Installation
-
-However, if you must insist…
 
 You can install the development version of actsims like so:
 
@@ -26,7 +22,7 @@ devtools::install_github("acastroaraujo/actsims")
 
 ## Usage
 
-- `actsims` is meant to be fast and easy to use.
+- `actsims` is meant to be *fast* and *easy* to use.
 - It uses the R6 OOP system to keep better track of EPA ratings and
   transient impression equations.
 - It is integrated with the `actdata` package.
@@ -81,15 +77,15 @@ act$dictionary
 #> # ℹ 2,393 more rows
 ```
 
-## Methods
-
 This object comes with built in methods which you can access via the `$`
 operator.
+
+## Methods
 
 **Deflection scores.**
 
 ``` r
-d <- act$deflection(list(A = "god", B = "kill", O = "deadbeat"))
+d <- act$deflection(data.frame(A = "god", B = "kill", O = "deadbeat"))
 d
 #> # Event deflection
 #> # A data frame: 1 × 4
@@ -121,12 +117,12 @@ get_element_wise_deflection(d)
 **Behaviors**
 
 ``` r
-act$optimal_behavior_actor(d)
+act$optimal_behavior(d, who = "actor")
 #> # A tibble: 1 × 3
 #>      Be    Bp     Ba
 #>   <dbl> <dbl>  <dbl>
 #> 1  1.90  1.18 -0.637
-act$optimal_behavior_object(d)
+act$optimal_behavior(d, who = "object")
 #> # A tibble: 1 × 3
 #>      Be     Bp    Ba
 #>   <dbl>  <dbl> <dbl>
@@ -136,12 +132,12 @@ act$optimal_behavior_object(d)
 **Re-identification**
 
 ``` r
-act$reidentify_actor(d)
+act$reidentify(d, who = "actor")
 #> # A tibble: 1 × 3
 #>       Ae    Ap    Aa
 #>    <dbl> <dbl> <dbl>
 #> 1 -0.999  2.35 0.848
-act$reidentify_object(d)
+act$reidentify(d, who = "object")
 #> # A tibble: 1 × 3
 #>      Oe    Op    Oa
 #>   <dbl> <dbl> <dbl>
@@ -152,7 +148,7 @@ act$reidentify_object(d)
 
 ``` r
 act$max_confirm(
-  events = data.frame(A = "god", O = "deadbeat"), 
+  events = tibble(A = "god", O = "deadbeat"), 
   solve_for = "behavior"
 ) 
 #> # A tibble: 1 × 3
@@ -161,7 +157,7 @@ act$max_confirm(
 #> 1 0.545  1.54 -0.634
 
 act$max_confirm(
-  events = data.frame(A = "god", B = "kill"), 
+  events = list(A = "god", B = "kill"), 
   solve_for = "object"
 ) 
 #> # A tibble: 1 × 3
@@ -205,48 +201,48 @@ act$closest_terms(epa = deadbeat, component = "modifier", max_dist = 0.5)
 You can use a grid of events to estimate multiple deflection scores
 simultaneously.
 
-For example, the following `events` object contains more than 2 million
-ABO events randomly created from the `usfullsurveyor2015` dictionary.
+For example, the following `events` object contains 4 million ABO events
+randomly created from the `usfullsurveyor2015` dictionary.
 
 ``` r
 # create a grid of specific AB0s
 events <- tidyr::crossing(
-  A = act$dictionary |> dplyr::filter(component == "identity") |> dplyr::pull(term),
-  B = act$dictionary |> dplyr::filter(component == "behavior") |> dplyr::pull(term) |> sample(3),
-  O = act$dictionary |> dplyr::filter(component == "identity") |> dplyr::pull(term)
+  A = dplyr::filter(act$dictionary, component == "identity")[["term"]] |> sample(200),
+  B = dplyr::filter(act$dictionary, component == "behavior")[["term"]] |> sample(100),
+  O = dplyr::filter(act$dictionary, component == "identity")[["term"]] |> sample(200)
 ) 
 
 glimpse(events)
-#> Rows: 2,589,123
+#> Rows: 4,000,000
 #> Columns: 3
-#> $ A <chr> "abortionist", "abortionist", "abortionist", "abortionist", "abortio…
-#> $ B <chr> "drone_on_at", "drone_on_at", "drone_on_at", "drone_on_at", "drone_o…
-#> $ O <chr> "abortionist", "academic", "accomplice", "accountant", "accounting_c…
+#> $ A <chr> "acquaintance", "acquaintance", "acquaintance", "acquaintance", "acq…
+#> $ B <chr> "acknowledge", "acknowledge", "acknowledge", "acknowledge", "acknowl…
+#> $ O <chr> "adopted_son", "air_force_reservist", "alumnus", "angel", "anti_semi…
 ```
 
 Every method, with the exception of `$closest_terms()`, is designed to
 work in bulk. However, only the `$deflection()` method will work fast
-with millions of observations. Other methods might require a few
-minutes…
+with millions of observations. Other methods might require a minute or
+so…
 
 ``` r
 d <- act$deflection(events)
 d
 #> # Event deflection
-#> # A data frame: 2,589,123 × 4
-#>    A           B           O                deflection
-#>  * <chr>       <chr>       <chr>                 <dbl>
-#>  1 abortionist drone_on_at abortionist            4.70
-#>  2 abortionist drone_on_at academic              12.4 
-#>  3 abortionist drone_on_at accomplice             3.65
-#>  4 abortionist drone_on_at accountant             6.72
-#>  5 abortionist drone_on_at accounting_clerk       6.10
-#>  6 abortionist drone_on_at accused                3.28
-#>  7 abortionist drone_on_at acquaintance           5.18
-#>  8 abortionist drone_on_at actor                  6.32
-#>  9 abortionist drone_on_at addict                 4.85
-#> 10 abortionist drone_on_at adolescent             3.99
-#> # ℹ 2,589,113 more rows
+#> # A data frame: 4,000,000 × 4
+#>    A            B           O                   deflection
+#>  * <chr>        <chr>       <chr>                    <dbl>
+#>  1 acquaintance acknowledge adopted_son               5.98
+#>  2 acquaintance acknowledge air_force_reservist       5.61
+#>  3 acquaintance acknowledge alumnus                   6.04
+#>  4 acquaintance acknowledge angel                    11.4 
+#>  5 acquaintance acknowledge anti_semite               8.35
+#>  6 acquaintance acknowledge apprentice                6.69
+#>  7 acquaintance acknowledge army_general              5.47
+#>  8 acquaintance acknowledge asian                     7.23
+#>  9 acquaintance acknowledge asian_woman               7.04
+#> 10 acquaintance acknowledge ass                       5.99
+#> # ℹ 3,999,990 more rows
 ```
 
 ## Deference Score
@@ -267,29 +263,11 @@ occupation_ratings <- actdata::epa_subset(dataset = "occs2019") |>
   dplyr::ungroup() |> 
   dplyr::select(term, component, ratings)
 
-occupation_ratings
-#> # A tibble: 650 × 3
-#>    term                             component ratings  
-#>    <chr>                            <chr>     <list>   
-#>  1 911_dispatcher                   identity  <dbl [3]>
-#>  2 accountant                       identity  <dbl [3]>
-#>  3 actor                            identity  <dbl [3]>
-#>  4 actress                          identity  <dbl [3]>
-#>  5 actuary_for_an_insurance_company identity  <dbl [3]>
-#>  6 acupuncturist                    identity  <dbl [3]>
-#>  7 administrative_assistant         identity  <dbl [3]>
-#>  8 advertising_executive            identity  <dbl [3]>
-#>  9 advertising_salesman             identity  <dbl [3]>
-#> 10 aerobics_instructor              identity  <dbl [3]>
-#> # ℹ 640 more rows
-
 defer_to <- act$dictionary |> 
   dplyr::filter(term == "defer_to")
-```
 
-Then you’ll have to replace the original dictionary.
+# Then you'll have to replace the original dictionary.
 
-``` r
 act$dictionary <- dplyr::bind_rows(defer_to, occupation_ratings)
 #> ✔ added new dictionary
 ```
@@ -312,7 +290,7 @@ Now you just create another grid of events, calculate the deflection
 scores, and average over the As.
 
 ``` r
-events <- crossing(
+events <- tidyr::crossing(
   A = occupation_ratings$term,
   B = "defer_to",
   O = occupation_ratings$term

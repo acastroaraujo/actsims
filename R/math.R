@@ -59,19 +59,20 @@ get_data_matrix <- function(data, eq) {
   return(X)
 }
 
-get_selection_matrix <- function(equation) {
+get_selection_matrix <- function(B) {
+
+  ## `B` is private$.equations
 
   I <- diag(9)
 
-  ## grepl outputs TRUE whenever there is a match between the column name
-  ## and rownames(equation). as.integer creates a vector of 1s and 0s.
-  ## sapply assembles the resulting vectors (column-wise) into a matrix.
-
-  ## The selection matrix stacks up a 9x9 identity matrix on top of the previous
+  ## The selection matrix stacks up a 9x9 identity matrix on top of the next
   ## matrix.
 
-  out <- sapply(colnames(equation), function(x) {
-    as.integer(grepl(x, rownames(equation)))
+  out <- sapply(colnames(B), function(x) {
+    ## grepl outputs TRUE whenever there is a match between colnames(B)
+    ## and rownames(B). as.integer creates a vector of 1s and 0s.
+    as.integer(grepl(x, rownames(B)))
+    ## sapply assembles the resulting vectors (column-wise) into a matrix.
   }, simplify = TRUE)
 
   return(rbind(I, out))
@@ -85,24 +86,32 @@ get_h_matrix <- function(X) {
 
 # Solutions ---------------------------------------------------------------
 
-solve_equations <- function(Im, S, h) {
+solve_equations <- function(Im, S, H) {
 
-  St <- t(S)
-  g <- matrix(1 - rowSums(S), ncol = 1)
+  # `Im` is a matrix with every row corresponding to the diagonal
+  # in the `I` matrix used in Heisse's equations.
 
   if (requireNamespace("pbapply", quietly = TRUE)) {
-    loop <- pbapply::pbapply
+    loop <- pbapply::pbapply  ## for progress bars
   } else {
     loop <- base::apply
   }
 
-  out <- loop(Im, MARGIN = 1, function(X) {
-    I <- diag(X)
-    X <- St %*% I %*% h %*% I
-    -1 * solve(X %*% S) %*% X %*% g
+  # Precompute `St` and `g` for later use.
+
+  St <- t(S)
+  g <- matrix(1 - rowSums(S), ncol = 1)
+
+  # Solve equations for each row of `Im`
+
+  out <- loop(Im, MARGIN = 1, function(row) {
+    I <- diag(row)
+    M <- St %*% I %*% H %*% I
+    -1 * solve(M %*% S) %*% M %*% g
   }, simplify = TRUE)
 
   rownames(out) <- colnames(S)
+
   return(t(out))
 
 }

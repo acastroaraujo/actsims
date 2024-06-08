@@ -10,11 +10,11 @@
 #.  ... and for max-confirm when there's only twooo
 # - More documentation
 # - See if you can change the print from messages to cat
-
+#
+# - Ugh, make the closest_terms thing work in bulk, why not.
+#
 ## include modifiers!
-## allow for more dictionary options, figure out what to do with
-
-# Use java app to make more tests!!
+## allow for more dictionary options, figure out what to do with the group arguments
 
 #' @title Create a new InteRactModel object
 #'
@@ -63,12 +63,10 @@ interact <- function(dictionary = "usfullsurveyor2015", equations = "us2010", gr
 #'  |**Method**|**Description**|
 #'  |:----------|:---------------|
 #'  [`$deflection()`][method-deflection] | Return an "Event Deflection" data frame. |
-#'  [`$optimal_behavior_actor()`][method-optimal-behavior-actor] | Return... |
-#'  [`$optimal_behavior_object()`][method-optimal-behavior-object] | Return... |
-#'  `$reidentify_actor()`| Return... |
-#'  `$reidentify_object()`| Return... |
-#'  `$closest_terms()`|  Return... |
-#'  [`$max_confirm()`][method-max-confirm]|  Return... |
+#'  [`$optimal_behavior()`][method-optimal-behavior] | Calculate optimal behavior following an event |
+#'  [`$reidentify()`][method-reidentify] | Reidentify either actor or object following an event |
+#'  [`$max_confirm()`][method-max-confirm]|  Solve for... from a pairing of "actor," "object," or "behavior"  |
+#'  [`$closest_terms()`][method-closest-terms] |  Return closest terms in `$dictionary` to an EPA profile |
 #'
 #'
 InteRactModel <- R6::R6Class(
@@ -168,8 +166,8 @@ InteRactModel$set(
   function(events) {
 
     fundamentals <- stack_abo_ratings(events, private$.dictionary)
-    X <- get_data_matrix(fundamentals, private$.equations)
-    transients <- X %*% private$.equations
+    M <- get_data_matrix(fundamentals, private$.equations)
+    transients <- M %*% private$.equations
     element_wise_deflection <- (transients - fundamentals)^2
     events$deflection <- unname(rowSums(element_wise_deflection))
     events <- dplyr::as_tibble(events)
@@ -189,43 +187,42 @@ InteRactModel$set(
 
 ## Reidentification --------------------------------------------------------
 
+#' @title Reidentification of Actor or Object, following an event
+#'
+#' @name method-reidentify
+#' @aliases reidentify
+#' @family InteRactModel methods
+#'
+#' @description The `$optimal_behavior_actor()` method does this and that..
+#'
+#' @param x an "Event deflection" object created by the `$deflection()` method
+#'
+#' @param who (character) either "actor" or "object"
+#'
+#' @return a data frame of EPA profiles for the optimal reidentification
+#'
 InteRactModel$set(
-  "public", "reidentify_actor",
-  function(x) {
+  "public", "reidentify",
+  function(x, who = c("actor", "object")) {
 
+    who <- match.arg(who)
     if (!inherits(x, "event_deflection")) stop(call. = FALSE, "`x` must be a data frame created by the $deflection() method")
 
-    fundamentals <- get_fundamentals(x)
-    fundamentals[c("Ae", "Ap", "Aa")] <- 1
-    transients <- get_transients(x)
-    transients[c("Ae", "Ap", "Aa")] <- 1
-
-    Im <- cbind(fundamentals, get_data_matrix(fundamentals, private$.equations))
-    S <- private$.selection_matrix[, c("Ae", "Ap", "Aa")]
-    h <- get_h_matrix(private$.equations)
-
-    out <- solve_equations(Im, S, h)
-
-    dplyr::as_tibble(out)
-
-  })
-
-InteRactModel$set(
-  "public", "reidentify_object",
-  function(x) {
-
-    if (!inherits(x, "event_deflection")) stop(call. = FALSE, "`x` must be a data frame created by the $deflection() method")
+    col_select <- switch(who,
+      "actor" = c("Ae", "Ap", "Aa"),
+      "object" = c("Oe", "Op", "Oa")
+    )
 
     fundamentals <- get_fundamentals(x)
-    fundamentals[c("Oe", "Op", "Oa")] <- 1
     transients <- get_transients(x)
-    transients[c("Oe", "Op", "Oa")] <- 1
+    fundamentals[col_select] <- 1
+    transients[col_select] <- 1
 
     Im <- cbind(fundamentals, get_data_matrix(fundamentals, private$.equations))
-    S <- private$.selection_matrix[, c("Oe", "Op", "Oa")]
-    h <- get_h_matrix(private$.equations)
+    S <- private$.selection_matrix[, col_select]
+    H <- get_h_matrix(private$.equations)
 
-    out <- solve_equations(Im, S, h)
+    out <- solve_equations(Im, S, H)
 
     dplyr::as_tibble(out)
 
@@ -234,73 +231,48 @@ InteRactModel$set(
 
 ## Behaviors ---------------------------------------------------------------
 
-#' @title Calculate the Optimal Behavior for the Actor following an Event
+#' @title Calculate the Optimal Behavior for the Actor or Object following an Event
 #'
-#' @name method-optimal-behavior-actor
-#' @aliases optimal_behavior_actor
+#' @name method-optimal-behavior
+#' @aliases optimal_behavior
 #' @family InteRactModel methods
 #'
-#' @description The `$optimal_behavior_actor()` method does this and that..
+#' @description The `$optimal_behavior()` method does this and that..
 #'
 #' @param x an "Event deflection" object created by the `$deflection()` method
 #'
-#' @return a data frame of EPA profiles for the optimal behavior of the actor
+#' @param who (character) either "actor" or "object"
+#'
+#' @return a data frame of EPA profiles for the optimal behavior
 #'
 InteRactModel$set(
-  "public", "optimal_behavior_actor",
-  function(x) {
+  "public", "optimal_behavior",
+  function(x, who = c("actor", "object")) {
 
+    who <- match.arg(who)
     if (!inherits(x, "event_deflection")) stop(call. = FALSE, "`x` must be a data frame created by the $deflection() method")
+
+    col_select <- c("Be", "Bp", "Ba")
 
     fundamentals <- get_fundamentals(x)
     transients <- get_transients(x)
-    fundamentals[c("Be", "Bp", "Ba")] <- 1
-    transients[c("Be", "Bp", "Ba")] <- 1
+    fundamentals[col_select] <- 1
+    transients[col_select] <- 1
+
+    if (who == "object") {
+      fundamentals <- reverse_ao(fundamentals)
+      transients <- reverse_ao(transients)
+    }
 
     Im <- cbind(fundamentals, get_data_matrix(transients, private$.equations))
-    S <- private$.selection_matrix[, c("Be", "Bp", "Ba")]
-    h <- get_h_matrix(private$.equations)
+    S <- private$.selection_matrix[, col_select]
+    H <- get_h_matrix(private$.equations)
 
-    out <- solve_equations(Im, S, h)
+    out <- solve_equations(Im, S, H)
     dplyr::as_tibble(out)
 
   })
 
-#' @title Calculate the Optimal Behavior for the Object following an Event
-#'
-#' @name method-optimal-behavior-object
-#' @aliases optimal_behavior_object
-#' @family InteRactModel methods
-#'
-#' @description The `$optimal_behavior_object()` method does this and that..
-#'
-#' @param x an "Event deflection" object created by the `$deflection()` method
-#'
-#' @return a data frame of EPA profiles for the optimal behavior of the object
-#'
-InteRactModel$set(
-  "public", "optimal_behavior_object",
-  function(x) {
-
-    if (!inherits(x, "event_deflection")) stop(call. = FALSE, "`x` must be a data frame created by the $deflection() method")
-
-    fundamentals <- get_fundamentals(x)
-    transients <- get_transients(x)
-    fundamentals[c("Be", "Bp", "Ba")] <- 1
-    transients[c("Be", "Bp", "Ba")] <- 1
-
-    ## reverse code actors and objects
-    fundamentals <- reverse_ao(fundamentals)
-    transients <- reverse_ao(transients)
-
-    Im <- cbind(fundamentals, get_data_matrix(transients, private$.equations))
-    S <- private$.selection_matrix[, c("Be", "Bp", "Ba")]
-    h <- get_h_matrix(private$.equations)
-
-    out <- solve_equations(Im, S, h)
-    dplyr::as_tibble(out)
-
-  })
 
 ## Max Confirm -------------------------------------------------------------
 
@@ -333,10 +305,10 @@ InteRactModel$set(
     fundamentals <- stack_pair_ratings(events, solve_for, private$.dictionary)
 
     Im <- cbind(fundamentals, get_data_matrix(fundamentals, private$.equations))
-    h <- get_h_matrix(private$.equations)
     S <- private$.selection_matrix[, col_select]
+    H <- get_h_matrix(private$.equations)
 
-    out <- solve_equations(Im, S, h)
+    out <- solve_equations(Im, S, H)
     dplyr::as_tibble(out)
 
   }

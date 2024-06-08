@@ -31,7 +31,7 @@ d
 Other InteRactModel methods: 
 \code{\link{method-closest-terms}},
 \code{\link{method-max-confirm}},
-\code{\link{method-optimal-behavior-actor}},
-\code{\link{method-optimal-behavior-object}}
+\code{\link{method-optimal-behavior}},
+\code{\link{method-reidentify}}
 }
 \concept{InteRactModel methods}
