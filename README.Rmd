@@ -18,6 +18,7 @@ knitr::opts_chunk$set(
 # actsims
 
 <!-- badges: start -->
+[![R-CMD-check](https://github.com/acastroaraujo/actsims/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/acastroaraujo/actsims/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 `actsims` is an ACT package used for internal development of `interactShiny`
@@ -35,48 +36,89 @@ You can install the development version of actsims like so:
 devtools::install_github("acastroaraujo/actsims")
 ```
 
-## Performance
+## Usage
 
 -   `actsims` is meant to be fast and easy to use.
 -   It uses the R6 OOP system to keep better track of EPA ratings and transient impression equations.
 -   It is integrated with the `actdata` package.
 
-Create an "InteRact" R6 object.
+Create an "InteRactModel" R6 object.
 
 ```{r example}
 library(actsims)
 suppressMessages(library(tidyverse))
 
-act <- build_interact(dictionary = "usfullsurveyor2015", equation = "us2010")
+act <- interact(dictionary = "usfullsurveyor2015", equations = "us2010")
 act
+act$equations
+act$dictionary
 ```
 
-This object comes with built in functions. 
+## Methods
 
-Deflection scores.
+This object comes with built in methods which you can access via the `$` operator. 
+
+__Deflection scores.__
 
 ```{r}
-act$deflection(list(A = "deadbeat", B = "kill", O = "god"))
-act$deflection(list(A = "deadbeat", B = "kill", O = "deadbeat"))
+d <- act$deflection(list(A = "god", B = "kill", O = "deadbeat"))
+d
 ```
 
 You can also extract useful metadata from these scores.
 
 ```{r}
-d <- act$deflection(list(A = "ceo", B = "advise", O = "benefactor"))
-d
 get_fundamentals(d)
 get_transients(d)
 get_element_wise_deflection(d)
 ```
 
-You can also do other stuff (more to come).
+__Behaviors__
 
 ```{r}
+act$optimal_behavior_actor(d)
+act$optimal_behavior_object(d)
+```
+
+__Re-identification__
+
+```{r}
+act$reidentify_actor(d)
 act$reidentify_object(d)
 ```
 
-## Many many
+__Solve For...__
+
+```{r}
+act$max_confirm(
+  events = data.frame(A = "god", O = "deadbeat"), 
+  solve_for = "behavior"
+) 
+
+act$max_confirm(
+  events = data.frame(A = "god", B = "kill"), 
+  solve_for = "object"
+) 
+
+act$max_confirm(
+  events = data.frame(B = "kill", O = "deadbeat"), 
+  solve_for = "actor"
+) 
+
+```
+
+__Closest Terms__
+
+```{r}
+act$closest_terms(list(e = 1, p = 0, a = -1), component = "behavior", max_dist = 0.5)
+
+## Closest term to deadbeat (stored in d object)
+deadbeat <- get_fundamentals(d) |> select(matches("O")) 
+deadbeat
+act$closest_terms(epa = deadbeat, component = "modifier", max_dist = 0.5)
+```
+
+## In Bulk...
 
 You can use a grid of events to estimate multiple deflection scores simultaneously.
 
@@ -93,20 +135,21 @@ events <- tidyr::crossing(
 glimpse(events)
 ```
 
-Now you can repeat the earlier steps. 
+Every method, with the exception of `$closest_terms()`, is designed to work in bulk. However, only the `$deflection()` method will work fast with millions of observations. Other methods might require a few minutes...
 
 ```{r}
 d <- act$deflection(events)
 d
 ```
 
+
 ## Deference Score
 
 You can also create the deference scores discussed by Freeland & Hoey (2018). But this requires to set up a new dictionary. 
 
-Which you'll have to do with the help of external packages.
+You'll have to do with the help of some external packages.
 
-This is just way to do this. 
+For example:
 
 ```{r}
 occupation_ratings <- actdata::epa_subset(dataset = "occs2019") |> 
@@ -147,9 +190,8 @@ events <- crossing(
 output <- act$deflection(events)
 
 output |> 
-  filter(A != O) |> 
   group_by(A) |> 
-  summarize(avg = mean(deflection)) |> 
+  summarize(avg = mean(deflection), sd = sd(deflection)) |> 
   arrange(desc(avg)) 
 ```
 

@@ -4,6 +4,8 @@
 # actsims
 
 <!-- badges: start -->
+
+[![R-CMD-check](https://github.com/acastroaraujo/actsims/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/acastroaraujo/actsims/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 `actsims` is an ACT package used for internal development of
@@ -22,86 +24,183 @@ You can install the development version of actsims like so:
 devtools::install_github("acastroaraujo/actsims")
 ```
 
-## Performance
+## Usage
 
 - `actsims` is meant to be fast and easy to use.
 - It uses the R6 OOP system to keep better track of EPA ratings and
   transient impression equations.
 - It is integrated with the `actdata` package.
 
-Create an “InteRact” R6 object.
+Create an “InteRactModel” R6 object.
 
 ``` r
 library(actsims)
 #> Loading required package: actdata
 suppressMessages(library(tidyverse))
 
-act <- build_interact(dictionary = "usfullsurveyor2015", equation = "us2010")
+act <- interact(dictionary = "usfullsurveyor2015", equations = "us2010")
 act
 #> 
 #> ── Interact Analysis ───────────────────────────────────────────────────────────
 #> ℹ Dictionary: usfullsurveyor2015
-#> ℹ group: all
+#> ✔ group: all
 #> ℹ Equations: us2010
+#> ✔ group: all
+#> ✔ type: impressionabo
+act$equations
+#>               Ae'   Ap'   Aa'   Be'   Bp'   Ba'   Oe'   Op'   Oa'
+#> (Intercept) -0.16 -0.06 -0.05 -0.26  0.09  0.21 -0.18  0.00 -0.14
+#> Ae           0.62  0.00  0.00  0.52  0.00  0.00  0.00  0.00  0.00
+#> Ap           0.00  0.57  0.00  0.00  0.53  0.00  0.00  0.00  0.00
+#> Aa           0.00  0.00  0.26  0.00  0.00  0.15  0.00  0.00  0.00
+#> Be           0.46 -0.29 -0.18  0.50 -0.21 -0.12  0.26  0.51  0.33
+#> Bp           0.00  0.62  0.12  0.00  0.64  0.00  0.00 -0.57 -0.41
+#> Ba           0.00  0.00  0.86  0.00  0.00  0.91  0.00  0.00  0.31
+#> Oe           0.00  0.00  0.00  0.00  0.00  0.00  0.91  0.00  0.00
+#> Op           0.00 -0.20  0.00  0.00  0.00  0.00  0.00  0.47  0.00
+#> Oa           0.00  0.00  0.00  0.00  0.00  0.09  0.00  0.00  0.54
+#> Ae:Be        0.00  0.00  0.00  0.00  0.00  0.00  0.16  0.00  0.54
+#> Be:Oe        0.29  0.00  0.00  0.32  0.00  0.00  0.11  0.00  0.00
+#> Bp:Oe       -0.22  0.00  0.00 -0.27  0.00  0.00 -0.15  0.00  0.00
+#> Be:Oa       -0.09  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00
+#> Aa:Ba:Oe     0.00  0.00  0.00  0.00  0.00  0.00  0.00 -0.10  0.00
+act$dictionary
+#> # A tibble: 2,403 × 5
+#>    term          component ratings   n         sd       
+#>    <chr>         <chr>     <list>    <list>    <list>   
+#>  1 abandon       behavior  <dbl [3]> <dbl [3]> <dbl [3]>
+#>  2 abandoned     modifier  <dbl [3]> <dbl [3]> <dbl [3]>
+#>  3 abduct        behavior  <dbl [3]> <dbl [3]> <dbl [3]>
+#>  4 abet          behavior  <dbl [3]> <dbl [3]> <dbl [3]>
+#>  5 abhor         behavior  <dbl [3]> <dbl [3]> <dbl [3]>
+#>  6 able_bodied   modifier  <dbl [3]> <dbl [3]> <dbl [3]>
+#>  7 abort         behavior  <dbl [3]> <dbl [3]> <dbl [3]>
+#>  8 abortionist   identity  <dbl [3]> <dbl [3]> <dbl [3]>
+#>  9 absent_minded modifier  <dbl [3]> <dbl [3]> <dbl [3]>
+#> 10 abuse         behavior  <dbl [3]> <dbl [3]> <dbl [3]>
+#> # ℹ 2,393 more rows
 ```
 
-This object comes with built in functions.
+## Methods
 
-Deflection scores.
+This object comes with built in methods which you can access via the `$`
+operator.
+
+**Deflection scores.**
 
 ``` r
-act$deflection(list(A = "deadbeat", B = "kill", O = "god"))
+d <- act$deflection(list(A = "god", B = "kill", O = "deadbeat"))
+d
 #> # Event deflection
 #> # A data frame: 1 × 4
-#>   A        B     O     deflection
-#> * <chr>    <chr> <chr>      <dbl>
-#> 1 deadbeat kill  god         137.
-act$deflection(list(A = "deadbeat", B = "kill", O = "deadbeat"))
-#> # Event deflection
-#> # A data frame: 1 × 4
-#>   A        B     O        deflection
-#> * <chr>    <chr> <chr>         <dbl>
-#> 1 deadbeat kill  deadbeat       97.8
+#>   A     B     O        deflection
+#> * <chr> <chr> <chr>         <dbl>
+#> 1 god   kill  deadbeat       173.
 ```
 
 You can also extract useful metadata from these scores.
 
 ``` r
-d <- act$deflection(list(A = "ceo", B = "advise", O = "benefactor"))
-d
-#> # Event deflection
-#> # A data frame: 1 × 4
-#>   A     B      O          deflection
-#> * <chr> <chr>  <chr>           <dbl>
-#> 1 ceo   advise benefactor       6.95
 get_fundamentals(d)
 #> # A tibble: 1 × 9
 #>      Ae    Ap    Aa    Be    Bp    Ba    Oe    Op    Oa
 #>   <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl>
-#> 1  0.71  3.22  1.48  2.57  2.28  0.28  1.97  1.98   0.1
+#> 1  3.19  3.45 -0.46 -4.26  1.95 -0.11  -2.8 -2.57 -1.45
 get_transients(d)
 #> # A tibble: 1 × 9
 #>      Ae    Ap    Aa    Be    Bp    Ba    Oe    Op    Oa
 #>   <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl>
-#> 1  1.92  2.05 0.387  1.80  2.72 0.387  2.46 0.860 0.899
+#> 1  3.96  4.86 0.737  4.56  4.06 0.422 -3.88 -4.48 -10.5
 get_element_wise_deflection(d)
 #> # A tibble: 1 × 9
-#>      Ae    Ap    Aa    Be    Bp     Ba    Oe    Op    Oa
-#>   <dbl> <dbl> <dbl> <dbl> <dbl>  <dbl> <dbl> <dbl> <dbl>
-#> 1  1.46  1.37  1.20 0.590 0.190 0.0115 0.236  1.25 0.639
+#>      Ae    Ap    Aa    Be    Bp    Ba    Oe    Op    Oa
+#>   <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl>
+#> 1 0.597  2.00  1.43  77.8  4.46 0.283  1.16  3.64  81.9
 ```
 
-You can also do other stuff (more to come).
+**Behaviors**
 
 ``` r
+act$optimal_behavior_actor(d)
+#> # A tibble: 1 × 3
+#>      Be    Bp     Ba
+#>   <dbl> <dbl>  <dbl>
+#> 1  1.90  1.18 -0.637
+act$optimal_behavior_object(d)
+#> # A tibble: 1 × 3
+#>      Be     Bp    Ba
+#>   <dbl>  <dbl> <dbl>
+#> 1 0.111 -0.525 0.233
+```
+
+**Re-identification**
+
+``` r
+act$reidentify_actor(d)
+#> # A tibble: 1 × 3
+#>       Ae    Ap    Aa
+#>    <dbl> <dbl> <dbl>
+#> 1 -0.999  2.35 0.848
 act$reidentify_object(d)
 #> # A tibble: 1 × 3
 #>      Oe    Op    Oa
 #>   <dbl> <dbl> <dbl>
-#> 1 0.763 0.746 0.358
+#> 1 -1.26 -4.85 -11.1
 ```
 
-## Many many
+**Solve For…**
+
+``` r
+act$max_confirm(
+  events = data.frame(A = "god", O = "deadbeat"), 
+  solve_for = "behavior"
+) 
+#> # A tibble: 1 × 3
+#>      Be    Bp     Ba
+#>   <dbl> <dbl>  <dbl>
+#> 1 0.545  1.54 -0.634
+
+act$max_confirm(
+  events = data.frame(A = "god", B = "kill"), 
+  solve_for = "object"
+) 
+#> # A tibble: 1 × 3
+#>      Oe    Op    Oa
+#>   <dbl> <dbl> <dbl>
+#> 1 -1.26 -4.85 -11.1
+
+act$max_confirm(
+  events = data.frame(B = "kill", O = "deadbeat"), 
+  solve_for = "actor"
+) 
+#> # A tibble: 1 × 3
+#>       Ae    Ap    Aa
+#>    <dbl> <dbl> <dbl>
+#> 1 -0.999  2.35 0.848
+```
+
+**Closest Terms**
+
+``` r
+act$closest_terms(list(e = 1, p = 0, a = -1), component = "behavior", max_dist = 0.5)
+#>        obey      bow_to      nuzzle comply_with  curtsey_to     gaze_at 
+#>      0.0581      0.1419      0.2141      0.2822      0.2948      0.4301 
+#>      stroke 
+#>      0.4806
+
+## Closest term to deadbeat (stored in d object)
+deadbeat <- get_fundamentals(d) |> select(matches("O")) 
+deadbeat
+#> # A tibble: 1 × 3
+#>      Oe    Op    Oa
+#>   <dbl> <dbl> <dbl>
+#> 1  -2.8 -2.57 -1.45
+act$closest_terms(epa = deadbeat, component = "modifier", max_dist = 0.5)
+#>  uneducated incompetent    helpless    cowardly        poor  unemployed 
+#>      0.1581      0.2489      0.3126      0.3507      0.3901      0.4555
+```
+
+## In Bulk…
 
 You can use a grid of events to estimate multiple deflection scores
 simultaneously.
@@ -121,29 +220,32 @@ glimpse(events)
 #> Rows: 2,589,123
 #> Columns: 3
 #> $ A <chr> "abortionist", "abortionist", "abortionist", "abortionist", "abortio…
-#> $ B <chr> "beat", "beat", "beat", "beat", "beat", "beat", "beat", "beat", "bea…
+#> $ B <chr> "drone_on_at", "drone_on_at", "drone_on_at", "drone_on_at", "drone_o…
 #> $ O <chr> "abortionist", "academic", "accomplice", "accountant", "accounting_c…
 ```
 
-Now you can repeat the earlier steps.
+Every method, with the exception of `$closest_terms()`, is designed to
+work in bulk. However, only the `$deflection()` method will work fast
+with millions of observations. Other methods might require a few
+minutes…
 
 ``` r
 d <- act$deflection(events)
 d
 #> # Event deflection
 #> # A data frame: 2,589,123 × 4
-#>    A           B     O                deflection
-#>  * <chr>       <chr> <chr>                 <dbl>
-#>  1 abortionist beat  abortionist            12.2
-#>  2 abortionist beat  academic               28.4
-#>  3 abortionist beat  accomplice             10.4
-#>  4 abortionist beat  accountant             15.7
-#>  5 abortionist beat  accounting_clerk       14.7
-#>  6 abortionist beat  accused                11.3
-#>  7 abortionist beat  acquaintance           13.8
-#>  8 abortionist beat  actor                  15.1
-#>  9 abortionist beat  addict                 15.9
-#> 10 abortionist beat  adolescent             11.3
+#>    A           B           O                deflection
+#>  * <chr>       <chr>       <chr>                 <dbl>
+#>  1 abortionist drone_on_at abortionist            4.70
+#>  2 abortionist drone_on_at academic              12.4 
+#>  3 abortionist drone_on_at accomplice             3.65
+#>  4 abortionist drone_on_at accountant             6.72
+#>  5 abortionist drone_on_at accounting_clerk       6.10
+#>  6 abortionist drone_on_at accused                3.28
+#>  7 abortionist drone_on_at acquaintance           5.18
+#>  8 abortionist drone_on_at actor                  6.32
+#>  9 abortionist drone_on_at addict                 4.85
+#> 10 abortionist drone_on_at adolescent             3.99
 #> # ℹ 2,589,113 more rows
 ```
 
@@ -152,9 +254,9 @@ d
 You can also create the deference scores discussed by Freeland & Hoey
 (2018). But this requires to set up a new dictionary.
 
-Which you’ll have to do with the help of external packages.
+You’ll have to do with the help of some external packages.
 
-This is just way to do this.
+For example:
 
 ``` r
 occupation_ratings <- actdata::epa_subset(dataset = "occs2019") |> 
@@ -200,8 +302,10 @@ act
 #> 
 #> ── Interact Analysis ───────────────────────────────────────────────────────────
 #> ℹ Dictionary: External [!]
-#> ℹ group: all
+#> ✔ group: ?
 #> ℹ Equations: us2010
+#> ✔ group: all
+#> ✔ type: impressionabo
 ```
 
 Now you just create another grid of events, calculate the deflection
@@ -217,22 +321,21 @@ events <- crossing(
 output <- act$deflection(events)
 
 output |> 
-  filter(A != O) |> 
   group_by(A) |> 
-  summarize(avg = mean(deflection)) |> 
+  summarize(avg = mean(deflection), sd = sd(deflection)) |> 
   arrange(desc(avg)) 
-#> # A tibble: 650 × 2
-#>    A                            avg
-#>    <chr>                      <dbl>
-#>  1 firefighter                 16.6
-#>  2 fireman                     15.0
-#>  3 paramedic                   13.9
-#>  4 professional_athlete        12.4
-#>  5 fire_department_lieutenant  12.3
-#>  6 ambulance_driver            11.4
-#>  7 auctioneer                  11.1
-#>  8 dynamite_blaster            10.9
-#>  9 911_dispatcher              10.9
-#> 10 surgeon                     10.6
+#> # A tibble: 650 × 3
+#>    A                            avg    sd
+#>    <chr>                      <dbl> <dbl>
+#>  1 firefighter                 16.7  1.50
+#>  2 fireman                     15.0  1.47
+#>  3 paramedic                   13.9  1.45
+#>  4 professional_athlete        12.4  1.40
+#>  5 fire_department_lieutenant  12.3  1.45
+#>  6 ambulance_driver            11.4  1.38
+#>  7 auctioneer                  11.1  1.31
+#>  8 dynamite_blaster            11.0  1.34
+#>  9 911_dispatcher              10.9  1.40
+#> 10 surgeon                     10.6  1.51
 #> # ℹ 640 more rows
 ```

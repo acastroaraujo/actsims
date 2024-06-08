@@ -9,17 +9,29 @@
 
 Each has to exist within the \verb{$dictionary} field}
 }
+\value{
+An "Event deflection" data frame.
+
+This data frame has an \code{event_deflection} S3 class with custom printing that
+works seamlessly with the family of \verb{get_*} functions.
+}
 \description{
 The \verb{$deflection()} method does this and that..
 }
 \examples{
 \dontrun{
-act <- interact_obj(dictionary = "usfullsurveyor2015", equation = "us2010")
+act <- interact(dictionary = "usfullsurveyor2015", equation = "us2010")
 d <- act$deflection(events = data.frame(A = "mother", B = "abandon", O = "baby"))
 d
 }
 }
 \seealso{
 \code{\link[=get_transients]{get_transients()}}, \code{\link[=get_fundamentals]{get_fundamentals()}}, \code{\link[=get_element_wise_deflection]{get_element_wise_deflection()}}
+
+Other InteRactModel methods: 
+\code{\link{method-closest-terms}},
+\code{\link{method-max-confirm}},
+\code{\link{method-optimal-behavior-actor}},
+\code{\link{method-optimal-behavior-object}}
 }
-\concept{InteRact methods}
+\concept{InteRactModel methods}

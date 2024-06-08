@@ -1,12 +1,56 @@
 
-act <- build_interact(dictionary = "usfullsurveyor2015", equation = "us2010", group = "all")
-events <- data.frame(A = "mother", B = "abandon", O = "child")
-d <- act$deflection(events)
 
-test_that("mother abandons child", {
-  expect_equal(d$deflection, 85.124527)
+test_that("ceo abuse god", {
+  act <- interact(dictionary = "usfullsurveyor2015", equations = "us2010", group = "all")
+  events <- data.frame(A = "ceo", B = "abuse", O = "god")
+  d <- act$deflection(events)
+
+  expect_equal(round(d$deflection, 2), 95.82)
   expect_equal(d$deflection, rowSums(get_element_wise_deflection(d)))
   expect_equal(d$deflection, sum((get_fundamentals(d) - get_transients(d))^2))
+
+  expect_equal(
+    ## corresponds to Actor Labels in Java app
+    object = act$reidentify_actor(d) |> round(3),
+    expected = dplyr::tibble(Ae = -0.941, Ap = -0.085, Aa = -0.72)
+  )
+
+  expect_equal(
+    ## corresponds to Object Labels in Java app
+    object = act$reidentify_object(d) |> round(3),
+    expected = dplyr::tibble(Oe = -0.491, Op = -3.605, Oa = -2.196)
+  )
+
+  expect_equal(
+    ## corresponds to Actor Behaviors in Java App
+    object = act$optimal_behavior_actor(d) |> round(3),
+    expected = dplyr::tibble(Be = -0.193, Bp = -0.175, Ba = 1.592)
+  )
+
+  expect_equal(
+    ## corresponds to Object Behaviors in Java App
+    object = act$optimal_behavior_actor(d) |> round(3),
+    expected = dplyr::tibble(Be = -0.193, Bp = -0.175, Ba = 1.592)
+  )
+
+  out <- act$max_confirm(events = list(A = "army_enlistee", O = "american"), solve_for = "behavior")
+  expect_equal(
+    object = round(out, 3),
+    expected = dplyr::tibble(Be = 1.085, Bp = 1.316, Ba = 0.738)
+  )
+
+  out <- act$max_confirm(events = list(A = "army_enlistee", B = "abandon"), solve_for = "object")
+  expect_equal(
+    object = round(out, 3),
+    expected = dplyr::tibble(Oe = -1.255, Op = -2.652, Oa = -7.087)
+  )
+
+  out <- act$max_confirm(events = list(O = "american", B = "abandon"), solve_for = "actor")
+  expect_equal(
+    object = round(out, 3),
+    expected = dplyr::tibble(Ae = -1.401, Ap = -0.475, Aa = 0.44)
+  )
+
 })
 
 

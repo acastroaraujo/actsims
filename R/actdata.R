@@ -108,4 +108,3 @@ get_equation <- function(key = "us2010", group = c("all", "female", "male")) {
 
 }
 
-

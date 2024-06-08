@@ -1,17 +1,25 @@
 
 # To do:
-# - see if you can make stack_epa_ratings faster
-# - stop reusing stuff for the other stuff (you know what I mean)
-# - bulk for maximally likely behaviors
-# - see why Event Deflection header doesn't knit with proper color
-# - document R6 methods following the cmdstanr convention
-#.  https://roxygen2.r-lib.org/articles/rd-other.html#r6
-# - Add more informative errors for when people use non event_deflection objects
+#
+#  Oooorrr, maybe have two separate instances of interact() and keep track of
+#  the history of play
+#
+#  Or maybe figure out a way to create a history of play object.
+#
+# - More informative errors—e.g., when event is not in dictionary; for both stack functions
+#.  ... and for max-confirm when there's only twooo
+# - More documentation
+# - See if you can change the print from messages to cat
 
-#' @title Create a new InteRact object
+## include modifiers!
+## allow for more dictionary options, figure out what to do with
+
+# Use java app to make more tests!!
+
+#' @title Create a new InteRactModel object
 #'
 #' @description
-#' Create a new [`InteRact`] by specifying dictionary and
+#' Create a new [`InteRactModel`] object by specifying dictionary and
 #' equation names available from the `actdata` package.
 #'
 #' @param dictionary (character) dictionary name.
@@ -20,67 +28,72 @@
 #'
 #' Currently only dictionaries that have "`group == all`" are valid.
 #'
-#' @param equation (character) equation name.
+#' @param equations (character) equations name.
 #'
 #' See available options using [`actdata::equations`]
 #'
-#' Currently only equations that have "`equation_type == impressionabo`" are valid.
+#' Currently only equations with "`equation_type == impressionabo`" are valid.
 #'
 #' @param group (character) one of "all" (default), "male", or "female." This specifies the equation type.
 #'
-#' @return An [`InteRact`] object.
+#' @return An [`InteRactModel`] object.
 #'
 #' @export
-build_interact <- function(dictionary = "usfullsurveyor2015", equation = "us2010", group = "all") {
-  InteRact$new(dictionary, equation, group)
+interact <- function(dictionary = "usfullsurveyor2015", equations = "us2010", group = "all") {
+  InteRactModel$new(dictionary, equations, group)
 }
 
-# InteRact ----------------------------------------------------------------
+# InteRactModel ----------------------------------------------------------------
 
-#' @title InteRact Objects
+#' @title InteRactModel Objects
 #'
-#' @name InteRact
-#' @description An `InteRact` object is an [R6][R6::R6Class] object created
-#'   by the [build_interact()] function.
+#' @name InteRactModel
+#' @description An `InteRactModel` object is an [R6][R6::R6Class] object created
+#'   by the [interact()] function.
 #'
 #'   The object stores (1) a dictionary of EPA ratings
-#'   or "fundamentals" and (2) an ACT equation used to calculate "transient impressions."
+#'   or "fundamentals" and (2) ACT equations used to calculate "transient impressions."
 #'
 #'   It also provides methods for calculating deflection scores, behaviors, reidentification,
 #'   among others.
 #'
-#' @section Methods: `InteRact` objects have the following associated
+#' @section Methods: `InteRactModel` objects have the following associated
 #'   methods, many of which have their own (linked) documentation pages:
 #'
 #'  |**Method**|**Description**|
 #'  |:----------|:---------------|
 #'  [`$deflection()`][method-deflection] | Return an "Event Deflection" data frame. |
-#'  `$optimal_behavior()` | Return... |
+#'  [`$optimal_behavior_actor()`][method-optimal-behavior-actor] | Return... |
+#'  [`$optimal_behavior_object()`][method-optimal-behavior-object] | Return... |
+#'  `$reidentify_actor()`| Return... |
 #'  `$reidentify_object()`| Return... |
 #'  `$closest_terms()`|  Return... |
+#'  [`$max_confirm()`][method-max-confirm]|  Return... |
 #'
 #'
-InteRact <- R6::R6Class(
-  classname = "InteRact",
+InteRactModel <- R6::R6Class(
+  classname = "InteRactModel",
 
   public = list(
-    initialize = function(dictionary = "usfullsurveyor2015", equation = "us2010", group = "all") {
+    initialize = function(dictionary = "usfullsurveyor2015", equations = "us2010", group = "all") {
+      private$.equations <- get_equation(key = equations, group = group)
       private$.dictionary <- get_dictionary(dataset = dictionary)
-      self$equation <- get_equation(key = equation, group = group)
+      private$.selection_matrix <- get_selection_matrix(private$.equations)
+
       private$.dict <- dictionary  ## this is
-      private$.group <- group      ## for
-      private$.eq <- equation      ## printing only
+      private$.group_eq <- group   ## for
+      private$.eq <- equations     ## printing only
+      private$.group_dict <- "all"
+
     },
     print = function() {
       cli::cli_h1("Interact Analysis")
       cli::cli_alert_info("Dictionary: {private$.dict}")
-      cli::cli_alert("group: all")
+      cli::cli_alert_success(cli::style_italic("group: {private$.group_dict}"))
       cli::cli_alert_info("Equations: {private$.eq}")
-      cli::cli_alert("group: {private$.group}")
-      cli::cli_alert("type: impressionabo")
-
-    },
-    equation = NULL
+      cli::cli_alert_success(cli::style_italic("group: {private$.group_eq}"))
+      cli::cli_alert_success(cli::style_italic("type: impressionabo"))
+    }
   ),
 
   active = list(
@@ -91,27 +104,45 @@ InteRact <- R6::R6Class(
         validate_new_dictionary(value)
         cli::cli_alert_success("added new dictionary")
         private$.dictionary <- value
+        private$.group_dict <- "?"
         private$.dict <- "External [!]"
+      }
+    },
+    equations = function(value) {
+      if (missing(value)) {
+        out <- private$.equations
+        # The print looks better with the "'" to indicate predictions
+        # But the code will break apart if we actually replace the original
+        # equation column names.
+        colnames(out) <- paste0(colnames(out), "'")
+        out
+      } else {
+        stop("Can't set `$equation`", call. = FALSE)
       }
     }
   ),
 
   private = list(
+    ## for internal use
     .dictionary = NULL,
+    .equations = NULL,
+    .selection_matrix = NULL,
+    ## for printing
     .dict = NULL,
-    .group = NULL,
+    .group_eq = NULL,
+    .group_dict = NULL,
     .eq = NULL
   )
 
 )
 
-# deflection --------------------------------------------------------------
+## Event Deflection --------------------------------------------------------
 
 #' @title Calculate Event Deflection Scores
 #'
 #' @name method-deflection
 #' @aliases deflection
-#' @family InteRact methods
+#' @family InteRactModel methods
 #'
 #' @description The `$deflection()` method does this and that..
 #'
@@ -119,26 +150,31 @@ InteRact <- R6::R6Class(
 #'
 #' Each has to exist within the `$dictionary` field
 #'
+#' @return An "Event deflection" data frame.
+#'
+#' This data frame has an `event_deflection` S3 class with custom printing that
+#' works seamlessly with the family of `get_*` functions.
+#'
 #' @seealso [get_transients()], [get_fundamentals()], [get_element_wise_deflection()]
 #'
 #' @examples
 #' \dontrun{
-#' act <- interact_obj(dictionary = "usfullsurveyor2015", equation = "us2010")
+#' act <- interact(dictionary = "usfullsurveyor2015", equation = "us2010")
 #' d <- act$deflection(events = data.frame(A = "mother", B = "abandon", O = "baby"))
 #' d
 #'}
-InteRact$set(
+InteRactModel$set(
   "public", "deflection",
   function(events) {
 
-    fundamentals <- stack_epa_ratings(events, private$.dictionary)
-    X <- get_data_matrix(fundamentals, self$equation)
-    transients <- X %*% self$equation
+    fundamentals <- stack_abo_ratings(events, private$.dictionary)
+    X <- get_data_matrix(fundamentals, private$.equations)
+    transients <- X %*% private$.equations
     element_wise_deflection <- (transients - fundamentals)^2
-    events$deflection <- as.vector(rowSums(element_wise_deflection))
+    events$deflection <- unname(rowSums(element_wise_deflection))
     events <- dplyr::as_tibble(events)
 
-    # output
+    # S3 class output
     structure(
       events,
       class = c("event_deflection", class(events)),
@@ -146,105 +182,199 @@ InteRact$set(
       transients = dplyr::as_tibble(transients),
       fundamentals = dplyr::as_tibble(fundamentals)
     )
+
 })
 
 
-# optimal behavior --------------------------------------------------------
 
-InteRact$set(
-  "public", "optimal_behavior",
-  function(events, who = c("actor", "object")) {
-    #who <- match.arg(who) ## FINISH THE ACTOR VS OBJECT
-    data <- get_actor(events, private$.dictionary, self$equation)
-    Ib <- apply(data, 1, diag, simplify = FALSE)
+## Reidentification --------------------------------------------------------
 
-    identity <- diag(ncol(self$equation))
-    h <- rbind(identity, -1*self$equation) %*% cbind(identity, -1*t(self$equation))
+InteRactModel$set(
+  "public", "reidentify_actor",
+  function(x) {
 
-    S <- matrix(0, ncol = 3, nrow = ncol(data)) ## selection matrix
+    if (!inherits(x, "event_deflection")) stop(call. = FALSE, "`x` must be a data frame created by the $deflection() method")
 
-    S[which(grepl("Be", colnames(data))), 1] <- 1
-    S[which(grepl("Bp", colnames(data))), 2] <- 1
-    S[which(grepl("Ba", colnames(data))), 3] <- 1
+    fundamentals <- get_fundamentals(x)
+    fundamentals[c("Ae", "Ap", "Aa")] <- 1
+    transients <- get_transients(x)
+    transients[c("Ae", "Ap", "Aa")] <- 1
 
-    colnames(S) <- paste0(rep("B", 3), c("e", "p", "a"))
-    g <- matrix(1 - rowSums(S), ncol = 1)
+    Im <- cbind(fundamentals, get_data_matrix(fundamentals, private$.equations))
+    S <- private$.selection_matrix[, c("Ae", "Ap", "Aa")]
+    h <- get_h_matrix(private$.equations)
 
-    out <- purrr::map(Ib, function(X) {
-      term1 <- t(S) %*% X %*% h %*% X %*% S
-      term1 <- -1 * solve(term1)
+    out <- solve_equations(Im, S, h)
 
-      term2 <- t(S) %*% X %*% h %*% X %*% g
-      t(term1 %*% term2)
-
-    })
-
-    as.data.frame(do.call(rbind, out))
+    dplyr::as_tibble(out)
 
   })
 
-# reidentify object -------------------------------------------------------
-
-InteRact$set(
+InteRactModel$set(
   "public", "reidentify_object",
-  function(events) {
+  function(x) {
 
-    stopifnot(inherits(events, "event_deflection"))
+    if (!inherits(x, "event_deflection")) stop(call. = FALSE, "`x` must be a data frame created by the $deflection() method")
 
-    data <- get_object(events, self$equation)
-    Ib <- apply(data, 1, diag, simplify = FALSE)
+    fundamentals <- get_fundamentals(x)
+    fundamentals[c("Oe", "Op", "Oa")] <- 1
+    transients <- get_transients(x)
+    transients[c("Oe", "Op", "Oa")] <- 1
 
-    identity <- diag(ncol(self$equation))
-    h <- rbind(identity, -1*self$equation) %*% cbind(identity, -1*t(self$equation))
+    Im <- cbind(fundamentals, get_data_matrix(fundamentals, private$.equations))
+    S <- private$.selection_matrix[, c("Oe", "Op", "Oa")]
+    h <- get_h_matrix(private$.equations)
 
-    S <- matrix(0, ncol = 3, nrow = ncol(data)) ## selection matrix
+    out <- solve_equations(Im, S, h)
 
-    S[which(!grepl("Ae", colnames(data))), 1] <- 1
-    S[which(!grepl("Ap", colnames(data))), 2] <- 1
-    S[which(!grepl("Aa", colnames(data))), 3] <- 1
-
-    colnames(S) <- paste0(rep("O", 3), c("e", "p", "a"))
-    g <- 1 - rowSums(S)
-
-    out <- purrr::map(Ib, function(X) {
-      term1 <- t(S) %*% X %*% h %*% X %*% S
-      term1 <- -1 * solve(term1)
-
-      term2 <- t(S) %*% X %*% h %*% X %*% g
-      t(term1 %*% term2)
-
-    })
-
-    dplyr::as_tibble(do.call(rbind, out))
+    dplyr::as_tibble(out)
 
   })
 
-# Closest Term ------------------------------------------------------------
 
-InteRact$set(
-  "public", "closest_term",
-  function(ratings, component = c("identity", "behavior", "modifier"), max_dist = 1) {
+## Behaviors ---------------------------------------------------------------
+
+#' @title Calculate the Optimal Behavior for the Actor following an Event
+#'
+#' @name method-optimal-behavior-actor
+#' @aliases optimal_behavior_actor
+#' @family InteRactModel methods
+#'
+#' @description The `$optimal_behavior_actor()` method does this and that..
+#'
+#' @param x an "Event deflection" object created by the `$deflection()` method
+#'
+#' @return a data frame of EPA profiles for the optimal behavior of the actor
+#'
+InteRactModel$set(
+  "public", "optimal_behavior_actor",
+  function(x) {
+
+    if (!inherits(x, "event_deflection")) stop(call. = FALSE, "`x` must be a data frame created by the $deflection() method")
+
+    fundamentals <- get_fundamentals(x)
+    transients <- get_transients(x)
+    fundamentals[c("Be", "Bp", "Ba")] <- 1
+    transients[c("Be", "Bp", "Ba")] <- 1
+
+    Im <- cbind(fundamentals, get_data_matrix(transients, private$.equations))
+    S <- private$.selection_matrix[, c("Be", "Bp", "Ba")]
+    h <- get_h_matrix(private$.equations)
+
+    out <- solve_equations(Im, S, h)
+    dplyr::as_tibble(out)
+
+  })
+
+#' @title Calculate the Optimal Behavior for the Object following an Event
+#'
+#' @name method-optimal-behavior-object
+#' @aliases optimal_behavior_object
+#' @family InteRactModel methods
+#'
+#' @description The `$optimal_behavior_object()` method does this and that..
+#'
+#' @param x an "Event deflection" object created by the `$deflection()` method
+#'
+#' @return a data frame of EPA profiles for the optimal behavior of the object
+#'
+InteRactModel$set(
+  "public", "optimal_behavior_object",
+  function(x) {
+
+    if (!inherits(x, "event_deflection")) stop(call. = FALSE, "`x` must be a data frame created by the $deflection() method")
+
+    fundamentals <- get_fundamentals(x)
+    transients <- get_transients(x)
+    fundamentals[c("Be", "Bp", "Ba")] <- 1
+    transients[c("Be", "Bp", "Ba")] <- 1
+
+    ## reverse code actors and objects
+    fundamentals <- reverse_ao(fundamentals)
+    transients <- reverse_ao(transients)
+
+    Im <- cbind(fundamentals, get_data_matrix(transients, private$.equations))
+    S <- private$.selection_matrix[, c("Be", "Bp", "Ba")]
+    h <- get_h_matrix(private$.equations)
+
+    out <- solve_equations(Im, S, h)
+    dplyr::as_tibble(out)
+
+  })
+
+## Max Confirm -------------------------------------------------------------
+
+#' @title Identify the behavior that would maximally confirm the identities of actor
+#' in an actor-object pairing
+#'
+#' @name method-max-confirm
+#' @aliases max_confirm
+#' @family InteRactModel methods
+#'
+#' @description The `$max_confirm()` method does this and that..
+#'
+#' @param events a data frame with only A and O
+#'
+#' @return a data frame of EPA profiles for the behavior the maximally confirms the
+#' identity of the actor
+#'
+InteRactModel$set(
+  "public", "max_confirm",
+  function(events, solve_for = c("actor", "behavior", "object")) {
+
+    solve_for <- match.arg(solve_for)
+
+    col_select <- switch(solve_for,
+      "actor" = c("Ae", "Ap", "Aa"),
+      "behavior" = c("Be", "Bp", "Ba"),
+      "object" = c("Oe", "Op", "Oa")
+    )
+
+    fundamentals <- stack_pair_ratings(events, solve_for, private$.dictionary)
+
+    Im <- cbind(fundamentals, get_data_matrix(fundamentals, private$.equations))
+    h <- get_h_matrix(private$.equations)
+    S <- private$.selection_matrix[, col_select]
+
+    out <- solve_equations(Im, S, h)
+    dplyr::as_tibble(out)
+
+  }
+)
+
+## Closest Term ------------------------------------------------------------
+
+#' @title Get Closest Terms to an EPA profile
+#'
+#' @name method-closest-terms
+#' @aliases closest_terms
+#' @family InteRactModel methods
+#'
+#' @description The `$closet_terms()` method does this and that..
+#'
+#' @param epa a vector or list of epa ratings
+#'
+#' It also works with one row data frame with `e`, `p`, and `a` columns
+#'
+#' @return a list of closest terms found in `$dictionary`, sorted by closeness.
+#'
+InteRactModel$set(
+  "public", "closest_terms",
+  function(epa, component = c("identity", "behavior", "modifier"), max_dist = 1) {
+
+    if (length(epa) != 3) stop(call. = FALSE, "`epa` must be three numbers")
 
     x <- match.arg(component)
 
     lookup <- private$.dictionary[private$.dictionary$component == x, ]
-    dict_epa <- do.call(rbind, lookup$ratings)
-    rownames(dict_epa) <- lookup$term
+    fundamentals <- do.call(rbind, lookup$ratings)
+    rownames(fundamentals) <- lookup$term
 
-    out <- apply(ratings, 1, function(x) {
+    ssd <- rowSums(sweep(fundamentals, MARGIN = 2, FUN = "-", unlist(epa))^2)
+    i <- which(ssd <= max_dist)
+    return(sort(ssd[i]))
 
-      ssd <- rowSums(sweep(dict_epa, MARGIN = 2, unlist(x))^2)
-      i <- which(ssd <= max_dist)
-      sort(ssd[i])
-
-    }, simplify = FALSE)
-
-    return(out)
-
-})
-
-
-# Maximally Confirm Behavior ----------------------------------------------
+  })
 
 
 

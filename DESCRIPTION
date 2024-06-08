@@ -24,5 +24,8 @@ BugReports: https://github.com/acastroaraujo/actsims/issues
 Remotes: 
     ahcombs/actdata
 Suggests: 
+    knitr,
+    pbapply,
+    rmarkdown,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
