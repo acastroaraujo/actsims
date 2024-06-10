@@ -68,12 +68,10 @@ coef_dict <- c(
   "Z001001001" = "Aa:Ba:Oa"
 )
 
-get_dictionary <- function(dataset = "usfullsurveyor2015") {
+get_dictionary <- function(dataset, group) {
 
-  dict <- match.arg(dataset, actdata::dataset_keys())
-
-  actdata::epa_subset(dataset = dict) |>
-    dplyr::filter(.data$group == "all") |>
+  actdata::epa_subset(dataset = dataset) |>
+    dplyr::filter(.data$group == !!group) |>
     dplyr::rename_all(tolower) |>
     dplyr::rowwise() |>
     dplyr::mutate(ratings = list(c(e = .data$e, p = .data$p, a = .data$a))) |>
@@ -84,16 +82,7 @@ get_dictionary <- function(dataset = "usfullsurveyor2015") {
 
 }
 
-get_equation <- function(key = "us2010", group = c("all", "female", "male")) {
-
-  key <- match.arg(key, unique(actdata::equations[["key"]]))
-  group <- match.arg(group)
-
-  ok <- any(actdata::equations$key == key & actdata::equations$group == group & actdata::equations$equation_type == "impressionabo")
-
-  if (!ok) {
-    stop(call. = FALSE, paste0("No equation with key (", key, "), group (", group, "), and equation_type (impressionabo)"))
-  }
+get_equation <- function(key, group) {
 
   eq_df <- actdata::equations |>
     dplyr::filter(.data$key == !!key, .data$equation_type == "impressionabo", .data$group == !!group) |>

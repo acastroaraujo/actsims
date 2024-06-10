@@ -5,25 +5,20 @@
 \title{Create a new InteRactModel object}
 \usage{
 interact(
-  dictionary = "usfullsurveyor2015",
-  equations = "us2010",
-  group = "all"
+  dictionary = list("usfullsurveyor2015", "all"),
+  equations = list("us2010", "all")
 )
 }
 \arguments{
-\item{dictionary}{(character) dictionary name.
+\item{dictionary}{(character) dictionary name and group. The default is set to \code{list("usfullsurveyor2015", "all")}
 
-See available options using \code{\link[actdata:dataset_keys]{actdata::dataset_keys()}}
+See available options using \code{\link[actdata:dataset_keys]{actdata::dataset_keys()}}}
 
-Currently only dictionaries that have "\code{group == all}" are valid.}
-
-\item{equations}{(character) equations name.
+\item{equations}{(character) equations name and group. The default is set to \code{list("usfullsurveyor2015", "all")}
 
 See available options using \code{\link[actdata:equations]{actdata::equations}}
 
 Currently only equations with "\code{equation_type == impressionabo}" are valid.}
-
-\item{group}{(character) one of "all" (default), "male", or "female." This specifies the equation type.}
 }
 \value{
 An \code{\link{InteRactModel}} object.

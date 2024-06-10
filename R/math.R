@@ -4,37 +4,46 @@
 
 stack_abo_ratings <- function(events, dict) {
 
-  stopifnot(all(purrr::map_lgl(c("A", "B", "O"), \(x) class(events[[x]]) == "character")))
+  i <- dict[dict[["component"]] == "identity", ]
+  b <- dict[dict[["component"]] == "behavior", ]
 
-  mat <- do.call(rbind, dict[["ratings"]])
-  rownames(mat) <- dict[["term"]]
+  identities <- purrr::set_names(i[["ratings"]], nm = i[["term"]]) |>
+    do.call(what = "rbind")
+
+  behaviors <- purrr::set_names(b[["ratings"]], nm = b[["term"]]) |>
+    do.call(what = "rbind")
 
   out <- cbind(
-    mat[events[["A"]], , drop = FALSE],
-    mat[events[["B"]], , drop = FALSE],
-    mat[events[["O"]], , drop = FALSE]
+    identities[events[["A"]], , drop = FALSE],
+    behaviors[events[["B"]], , drop = FALSE],
+    identities[events[["O"]], , drop = FALSE]
   )
 
   rownames(out) <- NULL
   colnames(out) <- paste0(rep(c("A", "B", "O"), each = 3), rep(c("e", "p", "a"), times = 3))
 
   return(out)
+
 }
 
 stack_pair_ratings <- function(events, solve_for, dict) {
 
-  ## stopifnot(all(purrr::map_lgl(c("A", "O"), \(x) class(events[[x]]) == "character")))
-  ## add message that warns if B column is present
+  i <- dict[dict[["component"]] == "identity", ]
+  b <- dict[dict[["component"]] == "behavior", ]
 
-  mat <- do.call(rbind, dict[["ratings"]])
-  rownames(mat) <- dict[["term"]]
+  identities <- purrr::set_names(i[["ratings"]], nm = i[["term"]]) |>
+    do.call(what = "rbind")
+
+  behaviors <- purrr::set_names(b[["ratings"]], nm = b[["term"]]) |>
+    do.call(what = "rbind")
 
   plug <- matrix(1, nrow = nrow(as.data.frame(events)), ncol = 3)
 
+
   out <- switch(solve_for,
-    "actor" = cbind(plug, mat[events[["B"]], , drop = FALSE], mat[events[["O"]], , drop = FALSE]),
-    "behavior" = cbind(mat[events[["A"]], , drop = FALSE], plug, mat[events[["O"]], , drop = FALSE]),
-    "object" = cbind(mat[events[["A"]], , drop = FALSE], mat[events[["B"]], , drop = FALSE], plug)
+    "actor" = cbind(plug, behaviors[events[["B"]], , drop = FALSE], identities[events[["O"]], , drop = FALSE]),
+    "behavior" = cbind(identities[events[["A"]], , drop = FALSE], plug, identities[events[["O"]], , drop = FALSE]),
+    "object" = cbind(identities[events[["A"]], , drop = FALSE], behaviors[events[["B"]], , drop = FALSE], plug)
   )
 
   rownames(out) <- NULL

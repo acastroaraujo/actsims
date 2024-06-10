@@ -8,7 +8,8 @@ test_that("ceo abuse god", {
   ## - Both Person 1 and Person 2 are set to male
   ## - The equations are U.S.A. 2010 (but double check, cause the app is buggy)
 
-  act <- interact(dictionary = "usfullsurveyor2015", equations = "us2010", group = "all")
+  act <- interact(dictionary = "usfullsurveyor2015", equations = "us2010")
+  act
   events <- data.frame(A = "ceo", B = "abuse", O = "god")
   d <- act$deflection(events)
 
@@ -59,5 +60,12 @@ test_that("ceo abuse god", {
   )
 
 })
+
+test_that("errors", {
+  expect_error(interact(equations = c("nc1978", "all")))
+  expect_error(interact(equations = c("us2010", "female")))
+})
+
+
 
 

@@ -13,12 +13,13 @@
 a data frame of EPA profiles for the optimal reidentification
 }
 \description{
-The \verb{$optimal_behavior_actor()} method does this and that..
+The \verb{$reidentify()} method does this and that..
 }
 \seealso{
 Other InteRactModel methods: 
 \code{\link{method-closest-terms}},
 \code{\link{method-deflection}},
+\code{\link{method-fundamentals}},
 \code{\link{method-max-confirm}},
 \code{\link{method-optimal-behavior}}
 }

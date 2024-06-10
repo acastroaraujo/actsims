@@ -8,8 +8,15 @@
 [![R-CMD-check](https://github.com/acastroaraujo/actsims/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/acastroaraujo/actsims/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
-`actsims` is an ACT package used for internal development of
-`interactShiny`
+- `actsims` is an ACT package used for internal development of
+  `interactShiny`
+
+- It is meant to be *fast* and *easy* to use.
+
+- It is integrated with the `actdata` package.
+
+- It uses the R6 OOP system to keep better track of EPA ratings and
+  transient impression equations.
 
 ## Installation
 
@@ -22,12 +29,7 @@ devtools::install_github("acastroaraujo/actsims")
 
 ## Usage
 
-- `actsims` is meant to be *fast* and *easy* to use.
-- It uses the R6 OOP system to keep better track of EPA ratings and
-  transient impression equations.
-- It is integrated with the `actdata` package.
-
-Create an “InteRactModel” R6 object.
+First, create an “`InteRactModel`” R6 object.
 
 ``` r
 library(actsims)
@@ -35,31 +37,21 @@ library(actsims)
 suppressMessages(library(tidyverse))
 
 act <- interact(dictionary = "usfullsurveyor2015", equations = "us2010")
+#> → equations = list(key = "us2010", group = "all")
+#> → dictionary = list(dataset = "usfullsurveyor2015", group = "all")
 act
 #> 
 #> ── Interact Analysis ───────────────────────────────────────────────────────────
 #> ℹ Dictionary: usfullsurveyor2015
-#> ✔ group: all
+#>   group: all
 #> ℹ Equations: us2010
-#> ✔ group: all
-#> ✔ type: impressionabo
-act$equations
-#>               Ae'   Ap'   Aa'   Be'   Bp'   Ba'   Oe'   Op'   Oa'
-#> (Intercept) -0.16 -0.06 -0.05 -0.26  0.09  0.21 -0.18  0.00 -0.14
-#> Ae           0.62  0.00  0.00  0.52  0.00  0.00  0.00  0.00  0.00
-#> Ap           0.00  0.57  0.00  0.00  0.53  0.00  0.00  0.00  0.00
-#> Aa           0.00  0.00  0.26  0.00  0.00  0.15  0.00  0.00  0.00
-#> Be           0.46 -0.29 -0.18  0.50 -0.21 -0.12  0.26  0.51  0.33
-#> Bp           0.00  0.62  0.12  0.00  0.64  0.00  0.00 -0.57 -0.41
-#> Ba           0.00  0.00  0.86  0.00  0.00  0.91  0.00  0.00  0.31
-#> Oe           0.00  0.00  0.00  0.00  0.00  0.00  0.91  0.00  0.00
-#> Op           0.00 -0.20  0.00  0.00  0.00  0.00  0.00  0.47  0.00
-#> Oa           0.00  0.00  0.00  0.00  0.00  0.09  0.00  0.00  0.54
-#> Ae:Be        0.00  0.00  0.00  0.00  0.00  0.00  0.16  0.00  0.54
-#> Be:Oe        0.29  0.00  0.00  0.32  0.00  0.00  0.11  0.00  0.00
-#> Bp:Oe       -0.22  0.00  0.00 -0.27  0.00  0.00 -0.15  0.00  0.00
-#> Be:Oa       -0.09  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00
-#> Aa:Ba:Oe     0.00  0.00  0.00  0.00  0.00  0.00  0.00 -0.10  0.00
+#>   group: all
+#>   type: impressionabo
+```
+
+*Dictionary*
+
+``` r
 act$dictionary
 #> # A tibble: 2,403 × 5
 #>    term          component ratings   n         sd       
@@ -77,10 +69,72 @@ act$dictionary
 #> # ℹ 2,393 more rows
 ```
 
-This object comes with built in methods which you can access via the `$`
-operator.
+*Equations*
+
+``` r
+act$equations
+#>               Ae'   Ap'   Aa'   Be'   Bp'   Ba'   Oe'   Op'   Oa'
+#> (Intercept) -0.16 -0.06 -0.05 -0.26  0.09  0.21 -0.18  0.00 -0.14
+#> Ae           0.62  0.00  0.00  0.52  0.00  0.00  0.00  0.00  0.00
+#> Ap           0.00  0.57  0.00  0.00  0.53  0.00  0.00  0.00  0.00
+#> Aa           0.00  0.00  0.26  0.00  0.00  0.15  0.00  0.00  0.00
+#> Be           0.46 -0.29 -0.18  0.50 -0.21 -0.12  0.26  0.51  0.33
+#> Bp           0.00  0.62  0.12  0.00  0.64  0.00  0.00 -0.57 -0.41
+#> Ba           0.00  0.00  0.86  0.00  0.00  0.91  0.00  0.00  0.31
+#> Oe           0.00  0.00  0.00  0.00  0.00  0.00  0.91  0.00  0.00
+#> Op           0.00 -0.20  0.00  0.00  0.00  0.00  0.00  0.47  0.00
+#> Oa           0.00  0.00  0.00  0.00  0.00  0.09  0.00  0.00  0.54
+#> Ae:Be        0.00  0.00  0.00  0.00  0.00  0.00  0.16  0.00  0.54
+#> Be:Oe        0.29  0.00  0.00  0.32  0.00  0.00  0.11  0.00  0.00
+#> Bp:Oe       -0.22  0.00  0.00 -0.27  0.00  0.00 -0.15  0.00  0.00
+#> Be:Oa       -0.09  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00
+#> Aa:Ba:Oe     0.00  0.00  0.00  0.00  0.00  0.00  0.00 -0.10  0.00
+```
+
+`interact()` uses `group = all` by default for both equations and
+dictionaries. If this option does not exist in the `actdata` package,
+then you will see an error.
+
+``` r
+interact(dictionary = "indiana2003", equations = "nc1978")
+```
+
+You can change the defaults by specifying a second element in either
+argument.
+
+For example:
+
+``` r
+interact(dictionary = "indiana2003", equations = list("nc1978", "male"))
+#> → dictionary = list(dataset = "indiana2003", group = "all")
+#> 
+#> ── Interact Analysis ───────────────────────────────────────────────────────────
+#> ℹ Dictionary: indiana2003
+#>   group: all
+#> ℹ Equations: nc1978
+#>   group: male
+#>   type: impressionabo
+```
 
 ## Methods
+
+`InteRactModel` objects come with built in methods which you can access
+via the `$` operator.
+
+**Fundamentals.**
+
+``` r
+act$fundamentals("mother")
+#> # Source: usfullsurveyor2015 (all)
+#> # A data frame: 2 × 5
+#>   term   component     e     p     a
+#> * <chr>  <chr>     <dbl> <dbl> <dbl>
+#> 1 mother behavior   2.79  2.84  0.18
+#> 2 mother identity   3.05  2.66  0.76
+```
+
+*Note. This is just a simple function that looks inside
+`act$dictionary`*
 
 **Deflection scores.**
 
@@ -184,14 +238,15 @@ act$closest_terms(list(e = 1, p = 0, a = -1), component = "behavior", max_dist =
 #>      stroke 
 #>      0.4806
 
-## Closest term to deadbeat (stored in d object)
-deadbeat <- get_fundamentals(d) |> select(matches("O")) 
+deadbeat <- act$fundamentals("deadbeat")
 deadbeat
-#> # A tibble: 1 × 3
-#>      Oe    Op    Oa
-#>   <dbl> <dbl> <dbl>
-#> 1  -2.8 -2.57 -1.45
-act$closest_terms(epa = deadbeat, component = "modifier", max_dist = 0.5)
+#> # Source: usfullsurveyor2015 (all)
+#> # A data frame: 1 × 5
+#>   term     component     e     p     a
+#> * <chr>    <chr>     <dbl> <dbl> <dbl>
+#> 1 deadbeat identity   -2.8 -2.57 -1.45
+
+act$closest_terms(deadbeat, component = "modifier", max_dist = 0.5)
 #>  uneducated incompetent    helpless    cowardly        poor  unemployed 
 #>      0.1581      0.2489      0.3126      0.3507      0.3901      0.4555
 ```
@@ -215,42 +270,43 @@ events <- tidyr::crossing(
 glimpse(events)
 #> Rows: 4,000,000
 #> Columns: 3
-#> $ A <chr> "acquaintance", "acquaintance", "acquaintance", "acquaintance", "acq…
-#> $ B <chr> "acknowledge", "acknowledge", "acknowledge", "acknowledge", "acknowl…
-#> $ O <chr> "adopted_son", "air_force_reservist", "alumnus", "angel", "anti_semi…
+#> $ A <chr> "abortionist", "abortionist", "abortionist", "abortionist", "abortio…
+#> $ B <chr> "abduct", "abduct", "abduct", "abduct", "abduct", "abduct", "abduct"…
+#> $ O <chr> "academic", "accounting_clerk", "accused", "acquaintance", "addict",…
 ```
 
-Every method, with the exception of `$closest_terms()`, is designed to
-work in bulk. However, only the `$deflection()` method will work fast
-with millions of observations. Other methods might require a minute or
-so…
+Every method is designed to work in bulk. However, only the
+`$deflection()` method will work fast with millions of observations.
 
 ``` r
 d <- act$deflection(events)
 d
 #> # Event deflection
 #> # A data frame: 4,000,000 × 4
-#>    A            B           O                   deflection
-#>  * <chr>        <chr>       <chr>                    <dbl>
-#>  1 acquaintance acknowledge adopted_son               5.98
-#>  2 acquaintance acknowledge air_force_reservist       5.61
-#>  3 acquaintance acknowledge alumnus                   6.04
-#>  4 acquaintance acknowledge angel                    11.4 
-#>  5 acquaintance acknowledge anti_semite               8.35
-#>  6 acquaintance acknowledge apprentice                6.69
-#>  7 acquaintance acknowledge army_general              5.47
-#>  8 acquaintance acknowledge asian                     7.23
-#>  9 acquaintance acknowledge asian_woman               7.04
-#> 10 acquaintance acknowledge ass                       5.99
+#>    A           B      O                  deflection
+#>  * <chr>       <chr>  <chr>                   <dbl>
+#>  1 abortionist abduct academic                 68.2
+#>  2 abortionist abduct accounting_clerk         35.1
+#>  3 abortionist abduct accused                  31.1
+#>  4 abortionist abduct acquaintance             33.1
+#>  5 abortionist abduct addict                   46.2
+#>  6 abortionist abduct adopted_daughter         51.9
+#>  7 abortionist abduct adopted_son              43.1
+#>  8 abortionist abduct adult                    37.1
+#>  9 abortionist abduct adulteress               58.9
+#> 10 abortionist abduct air_force_enlistee       55.1
 #> # ℹ 3,999,990 more rows
 ```
+
+Other methods might require a minute or so…
 
 ## Deference Score
 
 You can also create the deference scores discussed by Freeland & Hoey
-(2018). But this requires to set up a new dictionary.
+(2018).
 
-You’ll have to do with the help of some external packages.
+But this requires to set up a new dictionary, which you’ll have to do
+with the help of some external packages.
 
 For example:
 
@@ -280,10 +336,10 @@ act
 #> 
 #> ── Interact Analysis ───────────────────────────────────────────────────────────
 #> ℹ Dictionary: External [!]
-#> ✔ group: ?
+#>   group: ?
 #> ℹ Equations: us2010
-#> ✔ group: all
-#> ✔ type: impressionabo
+#>   group: all
+#>   type: impressionabo
 ```
 
 Now you just create another grid of events, calculate the deflection
@@ -300,20 +356,20 @@ output <- act$deflection(events)
 
 output |> 
   group_by(A) |> 
-  summarize(avg = mean(deflection), sd = sd(deflection)) |> 
+  summarize(avg = mean(deflection)) |> 
   arrange(desc(avg)) 
-#> # A tibble: 650 × 3
-#>    A                            avg    sd
-#>    <chr>                      <dbl> <dbl>
-#>  1 firefighter                 16.7  1.50
-#>  2 fireman                     15.0  1.47
-#>  3 paramedic                   13.9  1.45
-#>  4 professional_athlete        12.4  1.40
-#>  5 fire_department_lieutenant  12.3  1.45
-#>  6 ambulance_driver            11.4  1.38
-#>  7 auctioneer                  11.1  1.31
-#>  8 dynamite_blaster            11.0  1.34
-#>  9 911_dispatcher              10.9  1.40
-#> 10 surgeon                     10.6  1.51
+#> # A tibble: 650 × 2
+#>    A                            avg
+#>    <chr>                      <dbl>
+#>  1 firefighter                 16.7
+#>  2 fireman                     15.0
+#>  3 paramedic                   13.9
+#>  4 professional_athlete        12.4
+#>  5 fire_department_lieutenant  12.3
+#>  6 ambulance_driver            11.4
+#>  7 auctioneer                  11.1
+#>  8 dynamite_blaster            11.0
+#>  9 911_dispatcher              10.9
+#> 10 surgeon                     10.6
 #> # ℹ 640 more rows
 ```

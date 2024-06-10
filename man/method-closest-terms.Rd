@@ -13,11 +13,12 @@ It also works with one row data frame with \code{e}, \code{p}, and \code{a} colu
 a list of closest terms found in \verb{$dictionary}, sorted by closeness.
 }
 \description{
-The \verb{$closet_terms()} method does this and that..
+The \verb{$closest_terms()} method does this and that..
 }
 \seealso{
 Other InteRactModel methods: 
 \code{\link{method-deflection}},
+\code{\link{method-fundamentals}},
 \code{\link{method-max-confirm}},
 \code{\link{method-optimal-behavior}},
 \code{\link{method-reidentify}}

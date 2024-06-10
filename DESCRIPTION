@@ -17,7 +17,8 @@ Imports:
     dplyr,
     rlang,
     cli,
-    pillar
+    pillar,
+    tidyr
 LazyData: true
 URL: https://github.com/acastroaraujo/actsims
 BugReports: https://github.com/acastroaraujo/actsims/issues

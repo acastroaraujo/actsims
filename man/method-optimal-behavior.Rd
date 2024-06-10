@@ -19,6 +19,7 @@ The \verb{$optimal_behavior()} method does this and that..
 Other InteRactModel methods: 
 \code{\link{method-closest-terms}},
 \code{\link{method-deflection}},
+\code{\link{method-fundamentals}},
 \code{\link{method-max-confirm}},
 \code{\link{method-reidentify}}
 }

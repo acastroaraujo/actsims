@@ -1,46 +1,25 @@
 
-# To do:
-#
-#  Oooorrr, maybe have two separate instances of interact() and keep track of
-#  the history of play
-#
-#  Or maybe figure out a way to create a history of play object.
-#
-# - More informative errors—e.g., when event is not in dictionary; for both stack functions
-#.  ... and for max-confirm when there's only twooo
-# - More documentation
-# - See if you can change the print from messages to cat
-#
-# - Ugh, make the closest_terms thing work in bulk, why not.
-#
-## include modifiers!
-## allow for more dictionary options, figure out what to do with the group arguments
-
 #' @title Create a new InteRactModel object
 #'
 #' @description
 #' Create a new [`InteRactModel`] object by specifying dictionary and
 #' equation names available from the `actdata` package.
 #'
-#' @param dictionary (character) dictionary name.
+#' @param dictionary (character) dictionary name and group. The default is set to `list("usfullsurveyor2015", "all")`
 #'
 #' See available options using [`actdata::dataset_keys()`]
 #'
-#' Currently only dictionaries that have "`group == all`" are valid.
-#'
-#' @param equations (character) equations name.
+#' @param equations (character) equations name and group. The default is set to `list("usfullsurveyor2015", "all")`
 #'
 #' See available options using [`actdata::equations`]
 #'
 #' Currently only equations with "`equation_type == impressionabo`" are valid.
 #'
-#' @param group (character) one of "all" (default), "male", or "female." This specifies the equation type.
-#'
 #' @return An [`InteRactModel`] object.
 #'
 #' @export
-interact <- function(dictionary = "usfullsurveyor2015", equations = "us2010", group = "all") {
-  InteRactModel$new(dictionary, equations, group)
+interact <- function(dictionary = list("usfullsurveyor2015", "all"), equations = list("us2010", "all")) {
+  InteRactModel$new(dictionary, equations)
 }
 
 # InteRactModel ----------------------------------------------------------------
@@ -73,24 +52,30 @@ InteRactModel <- R6::R6Class(
   classname = "InteRactModel",
 
   public = list(
-    initialize = function(dictionary = "usfullsurveyor2015", equations = "us2010", group = "all") {
-      private$.equations <- get_equation(key = equations, group = group)
-      private$.dictionary <- get_dictionary(dataset = dictionary)
+    initialize = function(dictionary = list("usfullsurveyor2015", "all"), equations = list("us2010", "all")) {
+
+      equations <- validate_equations(equations)
+      dictionary <- validate_dictionary(dictionary)
+
+      private$.equations <- do.call(get_equation, as.list(equations))
+      private$.dictionary <- do.call(get_dictionary, as.list(dictionary))
       private$.selection_matrix <- get_selection_matrix(private$.equations)
 
-      private$.dict <- dictionary  ## this is
-      private$.group_eq <- group   ## for
-      private$.eq <- equations     ## printing only
-      private$.group_dict <- "all"
+      ## for printing
+      private$.dict <- dictionary[[1]]
+      private$.group_dict <- dictionary[[2]]
+      private$.eq <- equations[[1]]
+      private$.group_eq <- equations[[2]]
+
 
     },
     print = function() {
       cli::cli_h1("Interact Analysis")
       cli::cli_alert_info("Dictionary: {private$.dict}")
-      cli::cli_alert_success(cli::style_italic("group: {private$.group_dict}"))
+      cli::cli_bullets(c(" " = "group: {private$.group_dict}"))
       cli::cli_alert_info("Equations: {private$.eq}")
-      cli::cli_alert_success(cli::style_italic("group: {private$.group_eq}"))
-      cli::cli_alert_success(cli::style_italic("type: impressionabo"))
+      cli::cli_bullets(c(" " = "group: {private$.group_eq}"))
+      cli::cli_bullets(c(" " = "type: impressionabo"))
     }
   ),
 
@@ -126,13 +111,53 @@ InteRactModel <- R6::R6Class(
     .equations = NULL,
     .selection_matrix = NULL,
     ## for printing
-    .dict = NULL,
+    .eq = NULL,
     .group_eq = NULL,
-    .group_dict = NULL,
-    .eq = NULL
+    .dict = NULL,
+    .group_dict = NULL
   )
 
 )
+
+
+#' @title Lookup fundamentals in dictionary
+#'
+#' @name method-fundamentals
+#' @aliases fundamentals
+#' @family InteRactModel methods
+#'
+#' @description The `$fundamentals()` method does this and that..
+#'
+#' @param x (character) terms contained within the `$dictionary`
+#'
+#' @return A data frame of EPA profiles
+#'
+#' @seealso [get_fundamentals()]
+#'
+fundamentals <- function(x) {
+
+  i <- x %in% private$.dictionary$term
+  ok <- all(i)
+
+  if (!ok) {
+    cli::cli_abort("`{x[!i]}` not found in `$dictionary`", call = NULL)
+  }
+
+  out <- private$.dictionary |>
+    dplyr::select(dplyr::all_of(c("term", "component", "ratings"))) |>
+    dplyr::filter(.data$term %in% x) |>
+    tidyr::unnest_wider(.data$ratings)
+
+  # S3 class output
+  structure(
+    out,
+    class = c("fundamentals", class(out)),
+    dictionary = private$.dict,
+    group = private$.group_dict
+  )
+
+}
+InteRactModel$set("public", "fundamentals", fundamentals)
 
 ## Event Deflection --------------------------------------------------------
 
@@ -165,6 +190,9 @@ InteRactModel$set(
   "public", "deflection",
   function(events) {
 
+    validate_deflection(names(events))
+    validate_events(events, private$.dictionary)
+
     fundamentals <- stack_abo_ratings(events, private$.dictionary)
     M <- get_data_matrix(fundamentals, private$.equations)
     transients <- M %*% private$.equations
@@ -183,8 +211,6 @@ InteRactModel$set(
 
 })
 
-
-
 ## Reidentification --------------------------------------------------------
 
 #' @title Reidentification of Actor or Object, following an event
@@ -193,7 +219,7 @@ InteRactModel$set(
 #' @aliases reidentify
 #' @family InteRactModel methods
 #'
-#' @description The `$optimal_behavior_actor()` method does this and that..
+#' @description The `$reidentify()` method does this and that..
 #'
 #' @param x an "Event deflection" object created by the `$deflection()` method
 #'
@@ -223,8 +249,7 @@ InteRactModel$set(
     H <- get_h_matrix(private$.equations)
 
     out <- solve_equations(Im, S, H)
-
-    dplyr::as_tibble(out)
+    return(dplyr::as_tibble(out))
 
   })
 
@@ -269,7 +294,7 @@ InteRactModel$set(
     H <- get_h_matrix(private$.equations)
 
     out <- solve_equations(Im, S, H)
-    dplyr::as_tibble(out)
+    return(dplyr::as_tibble(out))
 
   })
 
@@ -285,16 +310,20 @@ InteRactModel$set(
 #'
 #' @description The `$max_confirm()` method does this and that..
 #'
-#' @param events a data frame with only A and O
+#' @param events a data frame with only only a pair of A, B, or O.
 #'
 #' @return a data frame of EPA profiles for the behavior the maximally confirms the
 #' identity of the actor
 #'
 InteRactModel$set(
   "public", "max_confirm",
-  function(events, solve_for = c("actor", "behavior", "object")) {
+  function(events, solve_for = c("behavior", "actor", "object")) {
 
     solve_for <- match.arg(solve_for)
+    validate_events(events, private$.dictionary)
+    validate_max_confirm(names(events), solve_for)
+
+    fundamentals <- stack_pair_ratings(events, solve_for, private$.dictionary)
 
     col_select <- switch(solve_for,
       "actor" = c("Ae", "Ap", "Aa"),
@@ -302,14 +331,12 @@ InteRactModel$set(
       "object" = c("Oe", "Op", "Oa")
     )
 
-    fundamentals <- stack_pair_ratings(events, solve_for, private$.dictionary)
-
     Im <- cbind(fundamentals, get_data_matrix(fundamentals, private$.equations))
     S <- private$.selection_matrix[, col_select]
     H <- get_h_matrix(private$.equations)
 
     out <- solve_equations(Im, S, H)
-    dplyr::as_tibble(out)
+    return(dplyr::as_tibble(out))
 
   }
 )
@@ -322,7 +349,7 @@ InteRactModel$set(
 #' @aliases closest_terms
 #' @family InteRactModel methods
 #'
-#' @description The `$closet_terms()` method does this and that..
+#' @description The `$closest_terms()` method does this and that..
 #'
 #' @param epa a vector or list of epa ratings
 #'
@@ -334,17 +361,21 @@ InteRactModel$set(
   "public", "closest_terms",
   function(epa, component = c("identity", "behavior", "modifier"), max_dist = 1) {
 
-    if (length(epa) != 3) stop(call. = FALSE, "`epa` must be three numbers")
-
+    epa <- validate_epa(epa)
     x <- match.arg(component)
 
     lookup <- private$.dictionary[private$.dictionary$component == x, ]
     fundamentals <- do.call(rbind, lookup$ratings)
     rownames(fundamentals) <- lookup$term
 
-    ssd <- rowSums(sweep(fundamentals, MARGIN = 2, FUN = "-", unlist(epa))^2)
-    i <- which(ssd <= max_dist)
-    return(sort(ssd[i]))
+    out <- apply(epa, MARGIN = 1, function(row) {
+      ssd <- rowSums(sweep(fundamentals, MARGIN = 2, FUN = "-", unlist(row))^2)
+      i <- which(ssd <= max_dist)
+      sort(ssd[i])
+    }, simplify = FALSE)
+
+    if (length(out) == 1L) out <- unlist(out)
+    return(out)
 
   })
 

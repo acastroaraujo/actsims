@@ -30,6 +30,7 @@ d
 
 Other InteRactModel methods: 
 \code{\link{method-closest-terms}},
+\code{\link{method-fundamentals}},
 \code{\link{method-max-confirm}},
 \code{\link{method-optimal-behavior}},
 \code{\link{method-reidentify}}

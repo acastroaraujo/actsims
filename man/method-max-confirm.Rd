@@ -6,7 +6,7 @@
 \title{Identify the behavior that would maximally confirm the identities of actor
 in an actor-object pairing}
 \arguments{
-\item{events}{a data frame with only A and O}
+\item{events}{a data frame with only only a pair of A, B, or O.}
 }
 \value{
 a data frame of EPA profiles for the behavior the maximally confirms the
@@ -19,6 +19,7 @@ The \verb{$max_confirm()} method does this and that..
 Other InteRactModel methods: 
 \code{\link{method-closest-terms}},
 \code{\link{method-deflection}},
+\code{\link{method-fundamentals}},
 \code{\link{method-optimal-behavior}},
 \code{\link{method-reidentify}}
 }

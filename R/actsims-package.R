@@ -8,4 +8,4 @@
 ## usethis namespace: end
 NULL
 
-# utils::globalVariables(c("self", "private", "super"))
+utils::globalVariables(c("self", "private", "super"))
