@@ -97,6 +97,10 @@ then you will see an error.
 
 ``` r
 interact(dictionary = "indiana2003", equations = "nc1978")
+#> → equations = list(key = "nc1978", group = "all")
+#> ! equations groups: male and female
+#> Error:
+#> ! `all` not found in `nc1978` equations in `actdata` package
 ```
 
 You can change the defaults by specifying a second element in either
@@ -270,9 +274,9 @@ events <- tidyr::crossing(
 glimpse(events)
 #> Rows: 4,000,000
 #> Columns: 3
-#> $ A <chr> "abortionist", "abortionist", "abortionist", "abortionist", "abortio…
-#> $ B <chr> "abduct", "abduct", "abduct", "abduct", "abduct", "abduct", "abduct"…
-#> $ O <chr> "academic", "accounting_clerk", "accused", "acquaintance", "addict",…
+#> $ A <chr> "accountant", "accountant", "accountant", "accountant", "accountant"…
+#> $ B <chr> "appease", "appease", "appease", "appease", "appease", "appease", "a…
+#> $ O <chr> "accountant", "accounting_clerk", "accused", "adulteress", "air_forc…
 ```
 
 Every method is designed to work in bulk. However, only the
@@ -283,18 +287,18 @@ d <- act$deflection(events)
 d
 #> # Event deflection
 #> # A data frame: 4,000,000 × 4
-#>    A           B      O                  deflection
-#>  * <chr>       <chr>  <chr>                   <dbl>
-#>  1 abortionist abduct academic                 68.2
-#>  2 abortionist abduct accounting_clerk         35.1
-#>  3 abortionist abduct accused                  31.1
-#>  4 abortionist abduct acquaintance             33.1
-#>  5 abortionist abduct addict                   46.2
-#>  6 abortionist abduct adopted_daughter         51.9
-#>  7 abortionist abduct adopted_son              43.1
-#>  8 abortionist abduct adult                    37.1
-#>  9 abortionist abduct adulteress               58.9
-#> 10 abortionist abduct air_force_enlistee       55.1
+#>    A          B       O                   deflection
+#>  * <chr>      <chr>   <chr>                    <dbl>
+#>  1 accountant appease accountant                1.34
+#>  2 accountant appease accounting_clerk          1.10
+#>  3 accountant appease accused                   1.57
+#>  4 accountant appease adulteress                1.38
+#>  5 accountant appease air_force_reservist       1.68
+#>  6 accountant appease airline_pilot             2.74
+#>  7 accountant appease alcoholic                 2.41
+#>  8 accountant appease alumnus                   1.41
+#>  9 accountant appease army_enlistee             1.93
+#> 10 accountant appease army_reservist            1.25
 #> # ℹ 3,999,990 more rows
 ```
 

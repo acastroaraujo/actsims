@@ -99,8 +99,8 @@ validate_max_confirm <- function(event_nms, solve_for) {
 validate_events <- function(events, dict) {
 
   ok <- all(purrr::map_lgl(events, is.character))
-  if (!ok) {
-    events <- lapply(events, as.character)
+  if (!ok) { ## avoid subsetting with factors [!]
+    events[] <- lapply(events, as.character)
   }
   identities <- dict[dict$component == "identity", ][["term"]]
   behaviors <- dict[dict$component == "behavior", ][["term"]]

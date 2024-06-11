@@ -64,7 +64,7 @@ act$equations
 
 `interact()` uses `group = all` by default for both equations and dictionaries. If this option does not exist in the `actdata` package, then you will see an error.
 
-```{r, error=TRUE, eval=FALSE}
+```{r, error=TRUE}
 interact(dictionary = "indiana2003", equations = "nc1978")
 ```
 
