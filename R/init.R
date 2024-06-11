@@ -312,8 +312,7 @@ InteRactModel$set(
 #'
 #' @param events a data frame with only only a pair of A, B, or O.
 #'
-#' @return a data frame of EPA profiles for the behavior the maximally confirms the
-#' identity of the actor
+#' @return a data frame with the maximally confirming EPA profiles
 #'
 InteRactModel$set(
   "public", "max_confirm",

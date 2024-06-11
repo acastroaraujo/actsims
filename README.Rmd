@@ -170,9 +170,26 @@ Every method is designed to work in bulk. However, only the `$deflection()` meth
 ```{r}
 d <- act$deflection(events)
 d
+get_fundamentals(d)
+get_transients(d)
+get_element_wise_deflection(d)
 ```
 
 Other methods might require a minute or so...
+
+```{r}
+d_sub <- dplyr::slice_sample(d, n = 10000) # sample 10000 event deflections
+d_sub
+act$reidentify(d_sub, who = "actor")
+act$optimal_behavior(d_sub, who = "actor")
+act$reidentify(d_sub, who = "object")
+act$optimal_behavior(d_sub, who = "object")
+
+act$max_confirm(d_sub[c("A", "O")], solve_for = "behavior")
+act$max_confirm(d_sub[c("A", "B")], solve_for = "object")
+act$max_confirm(d_sub[c("B", "O")], solve_for = "actor")
+```
+
 
 ## Deference Score
 
