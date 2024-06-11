@@ -9,8 +9,7 @@ in an actor-object pairing}
 \item{events}{a data frame with only only a pair of A, B, or O.}
 }
 \value{
-a data frame of EPA profiles for the behavior the maximally confirms the
-identity of the actor
+a data frame with the maximally confirming EPA profiles
 }
 \description{
 The \verb{$max_confirm()} method does this and that..

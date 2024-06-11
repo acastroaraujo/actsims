@@ -146,7 +146,7 @@ fundamentals <- function(x) {
   out <- private$.dictionary |>
     dplyr::select(dplyr::all_of(c("term", "component", "ratings"))) |>
     dplyr::filter(.data$term %in% x) |>
-    tidyr::unnest_wider(.data$ratings)
+    tidyr::unnest_wider("ratings")
 
   # S3 class output
   structure(
