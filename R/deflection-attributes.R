@@ -66,7 +66,7 @@ dplyr_row_slice.event_deflection <- function(data, i, ...) {
 #' @export
 `[.event_deflection` <- function(data, i, j, ..., drop = TRUE) {
 
-  out <- NextMethod("[")
+  out <- NextMethod("[")  ## method dispatch to `tbl_df`, `tbl`, or `data.frame` class
   tra <- get_transients(data)[i, ]
   fun <- get_fundamentals(data)[i, ]
   ewd <- get_element_wise_deflection(data)[i, ]

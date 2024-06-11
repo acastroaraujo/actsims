@@ -190,8 +190,8 @@ InteRactModel$set(
   "public", "deflection",
   function(events) {
 
+    events <- validate_events(events, private$.dictionary)
     validate_deflection(names(events))
-    validate_events(events, private$.dictionary)
 
     fundamentals <- stack_abo_ratings(events, private$.dictionary)
     M <- get_data_matrix(fundamentals, private$.equations)
@@ -320,7 +320,7 @@ InteRactModel$set(
   function(events, solve_for = c("behavior", "actor", "object")) {
 
     solve_for <- match.arg(solve_for)
-    validate_events(events, private$.dictionary)
+    events <- validate_events(events, private$.dictionary)
     validate_max_confirm(names(events), solve_for)
 
     fundamentals <- stack_pair_ratings(events, solve_for, private$.dictionary)
