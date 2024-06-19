@@ -103,14 +103,18 @@ get_transients(d)
 get_element_wise_deflection(d)
 ```
 
-__Behaviors__
+__Behaviors and Reidentification__
+
+Optimal behaviors and/or reidentification uses the deflection scores estimated by `$deflection()` and stored in `d`. They require you specify the perspective of the one doing the behaving or the reidentifying.
+
+Behaviors
 
 ```{r}
 act$optimal_behavior(d, who = "actor")
 act$optimal_behavior(d, who = "object")
 ```
 
-__Re-identification__
+Reidentification
 
 ```{r}
 act$reidentify(d, who = "actor")
@@ -195,43 +199,39 @@ act$max_confirm(d_sub[c("B", "O")], solve_for = "actor")
 
 You can also create the deference scores discussed by Freeland & Hoey (2018). 
 
-But this requires to set up a new dictionary, which you'll have to do with the help of some external packages.
+But this requires to modify the existing dictionary so we get the right combination of identities and behaviors.
 
-For example:
+This seems to be the easiest way to do this:
 
 ```{r}
-occupation_ratings <- actdata::epa_subset(dataset = "occs2019") |> 
-  dplyr::select(term, component, E, P, A) |> 
-  dplyr::rename_all(tolower) |> 
-  dplyr::rowwise() |> 
-  dplyr::mutate(ratings = list(c(e = e, p = p, a = a))) |> 
-  dplyr::ungroup() |> 
-  dplyr::select(term, component, ratings)
+occ <- interact(dictionary = "occs2019")
+occ$dictionary
+
+occupations <- occ$dictionary$term ## save for later use
 
 defer_to <- act$dictionary |> 
   dplyr::filter(term == "defer_to")
 
-# Then you'll have to replace the original dictionary.
-
-act$dictionary <- dplyr::bind_rows(defer_to, occupation_ratings)
+## replace original dictionary
+occ$dictionary <- dplyr::bind_rows(defer_to, occ$dictionary)
 ```
 
-Note that a message appeared signaling that the replacement was succesful.
+Note that a message appeared signaling that the replacement was successful.
 
 ```{r}
-act
+occ
 ```
 
 Now you just create another grid of events, calculate the deflection scores, and average over the As.
 
 ```{r}
 events <- tidyr::crossing(
-  A = occupation_ratings$term,
+  A = occupations,
   B = "defer_to",
-  O = occupation_ratings$term
+  O = occupations
 )
 
-output <- act$deflection(events)
+output <- occ$deflection(events)
 
 output |> 
   group_by(A) |> 

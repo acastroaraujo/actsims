@@ -16,7 +16,6 @@ test_that("max confirm replicates interact Indiana", {
     expected = dplyr::tibble(Be = 0.156, Bp = -0.461, Ba = 1.14)
   )
 
-
   obj <- interact(list("indiana2003", "male"), list("nc1978", "male"))
   events <- data.frame(A = c("abortionist", "adolescent"), O = c("adolescent", "abortionist"))
 

@@ -40,7 +40,7 @@ test_that("subsetting methods work in attribute datasets", {
     unname(unlist(get_fundamentals(out)[7:9]))
   )
 
-  events <- tidyr::expand_grid(
+  events <- expand.grid(
     A = sample(identities, 10),
     B = sample(behaviors, 10),
     O = sample(identities, 10)

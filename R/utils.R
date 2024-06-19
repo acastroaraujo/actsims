@@ -24,16 +24,18 @@ validate_dictionary <- function(x) {
   dicts <- purrr::map(actdata::get_dicts(), \(x) x@groups)
   names(dicts) <- purrr::map_chr(get_dicts(), \(x) x@key)
 
-  ok <- x[[1]] %in% names(dicts)
+  ok <- x[["dataset"]] %in% names(dicts)
 
   if (!ok) {
     cli::cli_abort("`{x[['dataset']]}` not found in {.pkg `actdata`} package", call = NULL)
   }
 
-  ok <- x[[2]] %in% dicts[[x[[1]]]]
+  groups <- dicts[[x[['dataset']]]]
+  ok <- x[["group"]] %in% groups
 
   if (!ok) {
-    cli::cli_abort("`{dicts[[x[['dataset']]]]}` group not found in `{x[['dataset']]}` dictionary in {.pkg `actdata`} package", call = NULL)
+    cli::cli_alert_warning("`{x[['dataset']]}` groups: {groups}")
+    cli::cli_abort("`{x['group']}` group not found in `{x[['dataset']]}` dictionary in {.pkg `actdata`} package", call = NULL)
   }
 
   return(x)

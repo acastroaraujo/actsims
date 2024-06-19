@@ -60,6 +60,11 @@ reverse_ao <- function(x) {
   x
 }
 
+epa_selector <- function(x = c("A", "B", "O")) {
+  x <- match.arg(x)
+  paste0(rep(x, 3), c("e", "p", "a"))
+}
+
 # Matrices ----------------------------------------------------------------
 
 get_data_matrix <- function(data, eq) {

@@ -54,6 +54,8 @@ InteRactModel <- R6::R6Class(
   public = list(
     initialize = function(dictionary = list("usfullsurveyor2015", "all"), equations = list("us2010", "all")) {
 
+      ## use the missing() function to make message show up whenever something is missing ??
+
       equations <- validate_equations(equations)
       dictionary <- validate_dictionary(dictionary)
 
@@ -76,6 +78,7 @@ InteRactModel <- R6::R6Class(
       cli::cli_alert_info("Equations: {private$.eq}")
       cli::cli_bullets(c(" " = "group: {private$.group_eq}"))
       cli::cli_bullets(c(" " = "type: impressionabo"))
+      invisible(self)
     }
   ),
 
@@ -143,10 +146,12 @@ fundamentals <- function(x) {
     cli::cli_abort("`{x[!i]}` not found in `$dictionary`", call = NULL)
   }
 
-  out <- private$.dictionary |>
-    dplyr::select(dplyr::all_of(c("term", "component", "ratings"))) |>
-    dplyr::filter(.data$term %in% x) |>
-    tidyr::unnest_wider("ratings")
+  row_select <- private$.dictionary$term %in% x
+
+  out <- dplyr::bind_cols(
+    private$.dictionary[row_select, c("term", "component")],
+    dplyr::bind_rows(private$.dictionary[["ratings"]][row_select])
+  )
 
   # S3 class output
   structure(
@@ -158,6 +163,11 @@ fundamentals <- function(x) {
 
 }
 InteRactModel$set("public", "fundamentals", fundamentals)
+
+
+
+
+
 
 ## Event Deflection --------------------------------------------------------
 
@@ -211,48 +221,6 @@ InteRactModel$set(
 
 })
 
-## Reidentification --------------------------------------------------------
-
-#' @title Reidentification of Actor or Object, following an event
-#'
-#' @name method-reidentify
-#' @aliases reidentify
-#' @family InteRactModel methods
-#'
-#' @description The `$reidentify()` method does this and that..
-#'
-#' @param x an "Event deflection" object created by the `$deflection()` method
-#'
-#' @param who (character) either "actor" or "object"
-#'
-#' @return a data frame of EPA profiles for the optimal reidentification
-#'
-InteRactModel$set(
-  "public", "reidentify",
-  function(x, who = c("actor", "object")) {
-
-    who <- match.arg(who)
-    if (!inherits(x, "event_deflection")) stop(call. = FALSE, "`x` must be a data frame created by the $deflection() method")
-
-    col_select <- switch(who,
-      "actor" = c("Ae", "Ap", "Aa"),
-      "object" = c("Oe", "Op", "Oa")
-    )
-
-    fundamentals <- get_fundamentals(x)
-    transients <- get_transients(x)
-    fundamentals[col_select] <- 1
-    transients[col_select] <- 1
-
-    Im <- cbind(fundamentals, get_data_matrix(fundamentals, private$.equations))
-    S <- private$.selection_matrix[, col_select]
-    H <- get_h_matrix(private$.equations)
-
-    out <- solve_equations(Im, S, H)
-    return(dplyr::as_tibble(out))
-
-  })
-
 
 ## Behaviors ---------------------------------------------------------------
 
@@ -277,7 +245,7 @@ InteRactModel$set(
     who <- match.arg(who)
     if (!inherits(x, "event_deflection")) stop(call. = FALSE, "`x` must be a data frame created by the $deflection() method")
 
-    col_select <- c("Be", "Bp", "Ba")
+    col_select <- epa_selector("B")
 
     fundamentals <- get_fundamentals(x)
     transients <- get_transients(x)
@@ -290,6 +258,48 @@ InteRactModel$set(
     }
 
     Im <- cbind(fundamentals, get_data_matrix(transients, private$.equations))
+    S <- private$.selection_matrix[, col_select]
+    H <- get_h_matrix(private$.equations)
+
+    out <- solve_equations(Im, S, H)
+    return(dplyr::as_tibble(out))
+
+  })
+
+## Reidentification --------------------------------------------------------
+
+#' @title Reidentification of Actor or Object, following an event
+#'
+#' @name method-reidentify
+#' @aliases reidentify
+#' @family InteRactModel methods
+#'
+#' @description The `$reidentify()` method does this and that..
+#'
+#' @param x an "Event deflection" object created by the `$deflection()` method
+#'
+#' @param who (character) either "actor" or "object"
+#'
+#' @return a data frame of EPA profiles for the optimal reidentification
+#'
+InteRactModel$set(
+  "public", "reidentify",
+  function(x, who = c("actor", "object")) {
+
+    who <- match.arg(who)
+    if (!inherits(x, "event_deflection")) stop(call. = FALSE, "`x` must be a data frame created by the $deflection() method")
+
+    col_select <- switch(who,
+      "actor" = epa_selector("A"),
+      "object" = epa_selector("O")
+    )
+
+    fundamentals <- get_fundamentals(x)
+    fundamentals[col_select] <- 1
+    #transients <- get_transients(x)
+    #transients[col_select] <- 1 ## the transients are not being used anywhere [??]
+
+    Im <- cbind(fundamentals, get_data_matrix(fundamentals, private$.equations))
     S <- private$.selection_matrix[, col_select]
     H <- get_h_matrix(private$.equations)
 
@@ -325,9 +335,9 @@ InteRactModel$set(
     fundamentals <- stack_pair_ratings(events, solve_for, private$.dictionary)
 
     col_select <- switch(solve_for,
-      "actor" = c("Ae", "Ap", "Aa"),
-      "behavior" = c("Be", "Bp", "Ba"),
-      "object" = c("Oe", "Op", "Oa")
+      "actor" = epa_selector("A"),
+      "behavior" = epa_selector("B"),
+      "object" = epa_selector("O")
     )
 
     Im <- cbind(fundamentals, get_data_matrix(fundamentals, private$.equations))

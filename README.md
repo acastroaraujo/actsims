@@ -34,11 +34,17 @@ First, create an “`InteRactModel`” R6 object.
 ``` r
 library(actsims)
 #> Loading required package: actdata
+```
+
+``` r
 suppressMessages(library(tidyverse))
 
 act <- interact(dictionary = "usfullsurveyor2015", equations = "us2010")
 #> → equations = list(key = "us2010", group = "all")
 #> → dictionary = list(dataset = "usfullsurveyor2015", group = "all")
+```
+
+``` r
 act
 #> 
 #> ── Interact Analysis ───────────────────────────────────────────────────────────
@@ -160,11 +166,17 @@ get_fundamentals(d)
 #>      Ae    Ap    Aa    Be    Bp    Ba    Oe    Op    Oa
 #>   <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl>
 #> 1  3.19  3.45 -0.46 -4.26  1.95 -0.11  -2.8 -2.57 -1.45
+```
+
+``` r
 get_transients(d)
 #> # A tibble: 1 × 9
 #>      Ae    Ap    Aa    Be    Bp    Ba    Oe    Op    Oa
 #>   <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl>
 #> 1  3.96  4.86 0.737  4.56  4.06 0.422 -3.88 -4.48 -10.5
+```
+
+``` r
 get_element_wise_deflection(d)
 #> # A tibble: 1 × 9
 #>      Ae    Ap    Aa    Be    Bp    Ba    Oe    Op    Oa
@@ -172,7 +184,13 @@ get_element_wise_deflection(d)
 #> 1 0.597  2.00  1.43  77.8  4.46 0.283  1.16  3.64  81.9
 ```
 
-**Behaviors**
+**Behaviors and Reidentification**
+
+Optimal behaviors and/or reidentification uses the deflection scores
+estimated by `$deflection()` and stored in `d`. They require you specify
+the perspective of the one doing the behaving or the reidentifying.
+
+Behaviors
 
 ``` r
 act$optimal_behavior(d, who = "actor")
@@ -180,6 +198,9 @@ act$optimal_behavior(d, who = "actor")
 #>      Be    Bp     Ba
 #>   <dbl> <dbl>  <dbl>
 #> 1  1.90  1.18 -0.637
+```
+
+``` r
 act$optimal_behavior(d, who = "object")
 #> # A tibble: 1 × 3
 #>      Be     Bp    Ba
@@ -187,7 +208,7 @@ act$optimal_behavior(d, who = "object")
 #> 1 0.111 -0.525 0.233
 ```
 
-**Re-identification**
+Reidentification
 
 ``` r
 act$reidentify(d, who = "actor")
@@ -195,6 +216,9 @@ act$reidentify(d, who = "actor")
 #>       Ae    Ap    Aa
 #>    <dbl> <dbl> <dbl>
 #> 1 -0.999  2.35 0.848
+```
+
+``` r
 act$reidentify(d, who = "object")
 #> # A tibble: 1 × 3
 #>      Oe    Op    Oa
@@ -213,6 +237,9 @@ act$max_confirm(
 #>      Be    Bp     Ba
 #>   <dbl> <dbl>  <dbl>
 #> 1 0.545  1.54 -0.634
+```
+
+``` r
 
 act$max_confirm(
   events = list(A = "god", B = "kill"), 
@@ -222,6 +249,9 @@ act$max_confirm(
 #>      Oe    Op    Oa
 #>   <dbl> <dbl> <dbl>
 #> 1 -1.26 -4.85 -11.1
+```
+
+``` r
 
 act$max_confirm(
   events = data.frame(B = "kill", O = "deadbeat"), 
@@ -241,6 +271,9 @@ act$closest_terms(list(e = 1, p = 0, a = -1), component = "behavior", max_dist =
 #>      0.0581      0.1419      0.2141      0.2822      0.2948      0.4301 
 #>      stroke 
 #>      0.4806
+```
+
+``` r
 
 deadbeat <- act$fundamentals("deadbeat")
 deadbeat
@@ -249,6 +282,9 @@ deadbeat
 #>   term     component     e     p     a
 #> * <chr>    <chr>     <dbl> <dbl> <dbl>
 #> 1 deadbeat identity   -2.8 -2.57 -1.45
+```
+
+``` r
 
 act$closest_terms(deadbeat, component = "modifier", max_dist = 0.5)
 #>  uneducated incompetent    helpless    cowardly        poor  unemployed 
@@ -274,9 +310,9 @@ events <- tidyr::crossing(
 glimpse(events)
 #> Rows: 4,000,000
 #> Columns: 3
-#> $ A <chr> "academic", "academic", "academic", "academic", "academic", "academi…
-#> $ B <chr> "abduct", "abduct", "abduct", "abduct", "abduct", "abduct", "abduct"…
-#> $ O <chr> "abortionist", "adolescent", "adulteress", "air_force_officer", "ane…
+#> $ A <chr> "abortionist", "abortionist", "abortionist", "abortionist", "abortio…
+#> $ B <chr> "abhor", "abhor", "abhor", "abhor", "abhor", "abhor", "abhor", "abho…
+#> $ O <chr> "abortionist", "accused", "addict", "adolescent", "adopted_son", "ad…
 ```
 
 Every method is designed to work in bulk. However, only the
@@ -287,63 +323,72 @@ d <- act$deflection(events)
 d
 #> # Event deflection
 #> # A data frame: 4,000,000 × 4
-#>    A        B      O                 deflection
-#>  * <chr>    <chr>  <chr>                  <dbl>
-#>  1 academic abduct abortionist             87.3
-#>  2 academic abduct adolescent              95.9
-#>  3 academic abduct adulteress             122. 
-#>  4 academic abduct air_force_officer      128. 
-#>  5 academic abduct anesthetist            106. 
-#>  6 academic abduct applicant               93.1
-#>  7 academic abduct army_chaplain          124. 
-#>  8 academic abduct army_enlistee          134. 
-#>  9 academic abduct army_general           129. 
-#> 10 academic abduct asian                  100. 
+#>    A           B     O             deflection
+#>  * <chr>       <chr> <chr>              <dbl>
+#>  1 abortionist abhor abortionist         8.12
+#>  2 abortionist abhor accused             7.06
+#>  3 abortionist abhor addict             11.1 
+#>  4 abortionist abhor adolescent          7.39
+#>  5 abortionist abhor adopted_son        13.2 
+#>  6 abortionist abhor adult              12.8 
+#>  7 abortionist abhor agnostic            6.52
+#>  8 abortionist abhor apprentice         11.1 
+#>  9 abortionist abhor architect          15.3 
+#> 10 abortionist abhor army_chaplain      19.4 
 #> # ℹ 3,999,990 more rows
+```
+
+``` r
 get_fundamentals(d)
 #> # A tibble: 4,000,000 × 9
 #>       Ae    Ap    Aa    Be    Bp    Ba    Oe    Op    Oa
 #>    <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl> <dbl>
-#>  1  2.34  2.26 -0.12 -3.81  1.98  1.35 -0.69  1    -0.21
-#>  2  2.34  2.26 -0.12 -3.81  1.98  1.35  0.66 -0.81  2.17
-#>  3  2.34  2.26 -0.12 -3.81  1.98  1.35 -2.43  0.45  0.96
-#>  4  2.34  2.26 -0.12 -3.81  1.98  1.35  2.07  2.42  1.6 
-#>  5  2.34  2.26 -0.12 -3.81  1.98  1.35  1.52  1.85 -0.89
-#>  6  2.34  2.26 -0.12 -3.81  1.98  1.35  1.12 -0.63 -0.06
-#>  7  2.34  2.26 -0.12 -3.81  1.98  1.35  2.16  1.59  0.23
-#>  8  2.34  2.26 -0.12 -3.81  1.98  1.35  2.39  1.64  1.3 
-#>  9  2.34  2.26 -0.12 -3.81  1.98  1.35  1.81  3.34  2.32
-#> 10  2.34  2.26 -0.12 -3.81  1.98  1.35  1.41  0.39 -0.34
+#>  1 -0.69     1 -0.21 -2.13   0.9  0.62 -0.69  1    -0.21
+#>  2 -0.69     1 -0.21 -2.13   0.9  0.62 -1.46 -1.38 -0.09
+#>  3 -0.69     1 -0.21 -2.13   0.9  0.62 -2.23 -2.36  0.19
+#>  4 -0.69     1 -0.21 -2.13   0.9  0.62  0.66 -0.81  2.17
+#>  5 -0.69     1 -0.21 -2.13   0.9  0.62  1.65  0.41  0.28
+#>  6 -0.69     1 -0.21 -2.13   0.9  0.62  1.06  1.81  0.29
+#>  7 -0.69     1 -0.21 -2.13   0.9  0.62  0.22 -0.08 -0.28
+#>  8 -0.69     1 -0.21 -2.13   0.9  0.62  1.46 -0.29  0.03
+#>  9 -0.69     1 -0.21 -2.13   0.9  0.62  1.52  1.7  -0.28
+#> 10 -0.69     1 -0.21 -2.13   0.9  0.62  2.16  1.59  0.23
 #> # ℹ 3,999,990 more rows
+```
+
+``` r
 get_transients(d)
 #> # A tibble: 4,000,000 × 9
-#>        Ae    Ap    Aa     Be    Bp    Ba    Oe    Op    Oa
-#>     <dbl> <dbl> <dbl>  <dbl> <dbl> <dbl> <dbl> <dbl> <dbl>
-#>  1  0.529  3.36  2.00  0.262  3.36  1.86 -2.73 -2.61 -6.72
-#>  2 -0.734  3.72  2.00 -2.11   3.36  2.07 -2.47 -3.44 -5.43
-#>  3  3.61   3.47  2.00  3.31   3.36  1.96 -3.07 -2.90 -6.09
-#>  4 -3.10   3.08  2.00 -4.58   3.36  2.02 -2.20 -1.90 -5.74
-#>  5 -3.11   3.19  2.00 -3.61   3.36  1.80 -2.30 -2.18 -7.09
-#>  6 -2.21   3.69  2.00 -2.91   3.36  1.87 -2.38 -3.35 -6.64
-#>  7 -3.71   3.24  2.00 -4.74   3.36  1.90 -2.18 -2.29 -6.48
-#>  8 -3.70   3.23  2.00 -5.14   3.36  1.99 -2.13 -2.26 -5.90
-#>  9 -2.45   2.89  2.00 -4.12   3.36  2.09 -2.25 -1.47 -5.35
-#> 10 -2.75   3.48  2.00 -3.42   3.36  1.85 -2.32 -2.87 -6.79
+#>        Ae    Ap    Aa     Be    Bp    Ba      Oe     Op      Oa
+#>     <dbl> <dbl> <dbl>  <dbl> <dbl> <dbl>   <dbl>  <dbl>   <dbl>
+#>  1 -1.05   1.49  0.92 -1.05   1.64 0.979 -0.872  -1.14  -0.339 
+#>  2 -0.394  1.96  0.92 -0.334  1.64 0.990 -1.29   -2.27  -0.275 
+#>  3  0.288  2.16  0.92  0.378  1.64 1.02  -1.70   -2.74  -0.123 
+#>  4 -1.69   1.85  0.92 -2.29   1.64 1.19  -0.142  -1.97   0.946 
+#>  5 -2.86   1.60  0.92 -3.21   1.64 1.02   0.394  -1.39  -0.0749
+#>  6 -2.38   1.32  0.92 -2.66   1.64 1.02   0.0745 -0.735 -0.0695
+#>  7 -1.80   1.70  0.92 -1.89   1.64 0.973 -0.380  -1.63  -0.377 
+#>  8 -2.75   1.74  0.92 -3.03   1.64 1.00   0.291  -1.72  -0.210 
+#>  9 -2.86   1.35  0.92 -3.09   1.64 0.973  0.323  -0.781 -0.377 
+#> 10 -3.29   1.37  0.92 -3.68   1.64 1.02   0.669  -0.824 -0.102 
 #> # ℹ 3,999,990 more rows
+```
+
+``` r
 get_element_wise_deflection(d)
 #> # A tibble: 4,000,000 × 9
-#>       Ae    Ap    Aa      Be    Bp    Ba     Oe    Op    Oa
-#>    <dbl> <dbl> <dbl>   <dbl> <dbl> <dbl>  <dbl> <dbl> <dbl>
-#>  1  3.28 1.21   4.51 16.6     1.89 0.259  4.17  13.1   42.4
-#>  2  9.45 2.14   4.51  2.90    1.89 0.523  9.79   6.93  57.8
-#>  3  1.61 1.47   4.51 50.7     1.89 0.377  0.407 11.2   49.7
-#>  4 29.6  0.667  4.51  0.591   1.89 0.451 18.2   18.7   53.9
-#>  5 29.7  0.866  4.51  0.0384  1.89 0.200 14.6   16.2   38.4
-#>  6 20.7  2.04   4.51  0.806   1.89 0.273 12.2    7.40  43.3
-#>  7 36.6  0.966  4.51  0.858   1.89 0.301 18.8   15.0   45.0
-#>  8 36.5  0.946  4.51  1.77    1.89 0.416 20.5   15.2   51.9
-#>  9 23.0  0.400  4.51  0.0977  1.89 0.542 16.5   23.2   58.9
-#> 10 25.9  1.49   4.51  0.151   1.89 0.247 13.9   10.6   41.6
+#>        Ae    Ap    Aa     Be    Bp    Ba     Oe    Op      Oa
+#>     <dbl> <dbl> <dbl>  <dbl> <dbl> <dbl>  <dbl> <dbl>   <dbl>
+#>  1 0.126  0.236  1.28 1.18   0.552 0.129 0.0330 4.57  0.0168 
+#>  2 0.0877 0.925  1.28 3.23   0.552 0.137 0.0296 0.787 0.0341 
+#>  3 0.956  1.34   1.28 6.29   0.552 0.156 0.276  0.143 0.0983 
+#>  4 1.00   0.719  1.28 0.0269 0.552 0.329 0.643  1.35  1.50   
+#>  5 4.71   0.364  1.28 1.17   0.552 0.163 1.58   3.22  0.126  
+#>  6 2.84   0.105  1.28 0.285  0.552 0.164 0.971  6.48  0.129  
+#>  7 1.23   0.492  1.28 0.0589 0.552 0.125 0.360  2.42  0.00946
+#>  8 4.26   0.553  1.28 0.817  0.552 0.145 1.37   2.04  0.0575 
+#>  9 4.71   0.120  1.28 0.920  0.552 0.125 1.43   6.15  0.00946
+#> 10 6.74   0.135  1.28 2.41   0.552 0.159 2.22   5.83  0.110  
 #> # ℹ 3,999,990 more rows
 ```
 
@@ -354,124 +399,145 @@ d_sub <- dplyr::slice_sample(d, n = 10000) # sample 10000 event deflections
 d_sub
 #> # Event deflection
 #> # A data frame: 10,000 × 4
-#>    A             B                O                 deflection
-#>  * <chr>         <chr>            <chr>                  <dbl>
-#>  1 pornographer  assail           subordinate             3.33
-#>  2 wallflower    intruder         nursing_assistant      33.1 
-#>  3 hairstylist   reform           interrogator            4.29
-#>  4 miser         raise_the_pay_of topless_dancer         21.6 
-#>  5 vigilante     scream_at        miser                  14.9 
-#>  6 social_worker contemplate      referee                 3.83
-#>  7 chairperson   jeer             spy                    17.7 
-#>  8 waiter        frighten         scholar                32.0 
-#>  9 foreman       reform           tease                   1.65
-#> 10 church_deacon ban              murderess              41.8 
+#>    A                       B          O                    deflection
+#>  * <chr>                   <chr>      <chr>                     <dbl>
+#>  1 sweetheart              remember   partner                   11.7 
+#>  2 boss                    stroke     craftsman                  7.14
+#>  3 army_officer            endure     bridesmaid                 7.85
+#>  4 quack                   brush_off  geologist                  8.95
+#>  5 geologist               disappoint optical_engineer          30.0 
+#>  6 call_girl               kick       uncle                     18.6 
+#>  7 rancher                 toast      nut                        5.00
+#>  8 co_worker               reward     nut                        6.82
+#>  9 bonehead                treat      bank_teller               20.7 
+#> 10 manager_of_branch_store mortify    assembly_line_worker      28.0 
 #> # ℹ 9,990 more rows
+```
+
+``` r
 act$reidentify(d_sub, who = "actor")
 #> # A tibble: 10,000 × 3
 #>        Ae     Ap      Aa
 #>     <dbl>  <dbl>   <dbl>
-#>  1 -0.764  0.945  1.88  
-#>  2 -1.32   0.556  0.589 
-#>  3  1.30   1.13  -0.0679
-#>  4  0.790  2.11   0.118 
-#>  5 -0.548  1.38   3.92  
-#>  6  1.61   0.514 -1.36  
-#>  7 -0.572 -0.292  2.36  
-#>  8 -0.889  0.858  0.224 
-#>  9  1.09   1.44  -0.0641
-#> 10 -1.73   1.71   2.51  
+#>  1  0.670  1.28  -0.389 
+#>  2  0.772  0.258 -1.28  
+#>  3  1.06   0.391 -1.11  
+#>  4 -1.08   0.582  0.0427
+#>  5 -1.13  -0.506 -0.189 
+#>  6 -1.08   0.265  1.04  
+#>  7  0.330  1.31   1.31  
+#>  8  0.442  1.89   0.449 
+#>  9  0.300  1.74   0.0165
+#> 10 -1.39   1.60   1.79  
 #> # ℹ 9,990 more rows
-act$optimal_behavior(d_sub, who = "actor")
-#> # A tibble: 10,000 × 3
-#>         Be     Bp     Ba
-#>      <dbl>  <dbl>  <dbl>
-#>  1  0.0859  0.584  0.365
-#>  2 -0.153  -2.81  -1.93 
-#>  3  1.00   -0.268  0.911
-#>  4 -1.17   -1.89  -0.462
-#>  5  0.330   0.789  0.485
-#>  6  1.24    0.655  0.512
-#>  7  1.31    1.53   1.26 
-#>  8  1.73   -2.32   1.72 
-#>  9  0.875   0.558  0.675
-#> 10  0.713  -0.761  0.133
-#> # ℹ 9,990 more rows
-act$reidentify(d_sub, who = "object")
-#> # A tibble: 10,000 × 3
-#>        Oe     Op      Oa
-#>     <dbl>  <dbl>   <dbl>
-#>  1 -0.437 -1.50   0.771 
-#>  2 -0.412 -1.85  -1.75  
-#>  3  0.173 -0.639 -0.285 
-#>  4 -0.548  0.522 -2.58  
-#>  5 -0.353 -2.37   0.0396
-#>  6  3.25  -0.419  0.675 
-#>  7 -0.656 -2.04  -2.33  
-#>  8 -0.563 -1.60  -3.05  
-#>  9 -0.318 -0.885 -0.887 
-#> 10 -0.450 -2.64  -4.21  
-#> # ℹ 9,990 more rows
-act$optimal_behavior(d_sub, who = "object")
-#> # A tibble: 10,000 × 3
-#>        Be      Bp     Ba
-#>     <dbl>   <dbl>  <dbl>
-#>  1 -0.499 -0.254  -0.776
-#>  2  1.39   3.68    0.105
-#>  3  0.453  1.03    1.34 
-#>  4 -0.618  0.652   1.55 
-#>  5 -1.00  -0.0762 -1.42 
-#>  6  1.11   1.26    1.06 
-#>  7 -0.239  0.861  -0.855
-#>  8  1.85   4.12   -0.135
-#>  9 -0.642 -0.155   0.897
-#> 10 -0.199  0.889   0.860
-#> # ℹ 9,990 more rows
+```
 
-act$max_confirm(d_sub[c("A", "O")], solve_for = "behavior")
+``` r
+act$optimal_behavior(d_sub, who = "actor")
 #> # A tibble: 10,000 × 3
 #>         Be     Bp      Ba
 #>      <dbl>  <dbl>   <dbl>
-#>  1 -0.515   0.530  0.545 
-#>  2 -0.0114 -0.977 -1.17  
-#>  3  0.784   0.439  0.696 
-#>  4 -1.51   -0.845 -1.14  
-#>  5  0.0776  1.04   1.06  
-#>  6  1.11    1.08  -0.0643
-#>  7  0.869   1.72   0.453 
-#>  8  0.420   0.143  0.487 
-#>  9  0.831   1.07   0.517 
-#> 10  0.760   0.915 -0.166 
+#>  1 -0.165   0.429  0.0701
+#>  2  0.713   1.90   1.38  
+#>  3  1.65    1.91   2.17  
+#>  4  0.818  -1.17   1.57  
+#>  5  0.240  -0.828 -0.195 
+#>  6  0.536  -2.26   0.796 
+#>  7  0.113   0.847 -0.341 
+#>  8 -0.191   0.664  0.328 
+#>  9 -0.921  -1.85  -0.306 
+#> 10  0.0517  0.450  1.72  
 #> # ℹ 9,990 more rows
+```
+
+``` r
+act$reidentify(d_sub, who = "object")
+#> # A tibble: 10,000 × 3
+#>        Oe      Op      Oa
+#>     <dbl>   <dbl>   <dbl>
+#>  1  3.94   0.0395  6.28  
+#>  2  0.580 -0.245   0.481 
+#>  3 -1.58  -1.23   -0.986 
+#>  4 -0.413 -1.27   -0.0872
+#>  5 -0.983 -1.71   -4.45  
+#>  6 -0.163 -1.77    1.82  
+#>  7  2.10   0.454   3.62  
+#>  8  2.94   0.272   4.55  
+#>  9 -0.184  1.01   -2.57  
+#> 10 -0.609 -2.84   -4.16  
+#> # ℹ 9,990 more rows
+```
+
+``` r
+act$optimal_behavior(d_sub, who = "object")
+#> # A tibble: 10,000 × 3
+#>         Be      Bp       Ba
+#>      <dbl>   <dbl>    <dbl>
+#>  1  0.817   1.88   -1.23   
+#>  2  1.25    0.444  -0.0724 
+#>  3  1.56    0.239   1.29   
+#>  4  1.12    1.85   -0.272  
+#>  5  0.677   2.65   -0.383  
+#>  6  1.25    2.79    0.432  
+#>  7 -0.284  -0.260  -0.133  
+#>  8 -0.0343 -0.0815  0.0911 
+#>  9 -0.372   1.07   -0.00708
+#> 10 -0.914   0.529   0.904  
+#> # ℹ 9,990 more rows
+```
+
+``` r
+
+act$max_confirm(d_sub[c("A", "O")], solve_for = "behavior")
+#> # A tibble: 10,000 × 3
+#>        Be     Bp      Ba
+#>     <dbl>  <dbl>   <dbl>
+#>  1  0.888  1.29  -0.171 
+#>  2  1.32   1.93   0.555 
+#>  3  1.36   1.73   1.02  
+#>  4 -0.144 -0.533  0.869 
+#>  5  0.739  0.576 -0.741 
+#>  6 -0.302 -0.832  0.782 
+#>  7  0.630  0.730  0.0735
+#>  8  0.577  0.751  0.465 
+#>  9 -0.575 -1.18  -0.829 
+#> 10  0.909  1.43   1.10  
+#> # ℹ 9,990 more rows
+```
+
+``` r
 act$max_confirm(d_sub[c("A", "B")], solve_for = "object")
 #> # A tibble: 10,000 × 3
-#>        Oe     Op      Oa
-#>     <dbl>  <dbl>   <dbl>
-#>  1 -0.437 -1.50   0.771 
-#>  2 -0.412 -1.85  -1.75  
-#>  3  0.173 -0.639 -0.285 
-#>  4 -0.548  0.522 -2.58  
-#>  5 -0.353 -2.37   0.0396
-#>  6  3.25  -0.419  0.675 
-#>  7 -0.656 -2.04  -2.33  
-#>  8 -0.563 -1.60  -3.05  
-#>  9 -0.318 -0.885 -0.887 
-#> 10 -0.450 -2.64  -4.21  
+#>        Oe      Op      Oa
+#>     <dbl>   <dbl>   <dbl>
+#>  1  3.94   0.0395  6.28  
+#>  2  0.580 -0.245   0.481 
+#>  3 -1.58  -1.23   -0.986 
+#>  4 -0.413 -1.27   -0.0872
+#>  5 -0.983 -1.71   -4.45  
+#>  6 -0.163 -1.77    1.82  
+#>  7  2.10   0.454   3.62  
+#>  8  2.94   0.272   4.55  
+#>  9 -0.184  1.01   -2.57  
+#> 10 -0.609 -2.84   -4.16  
 #> # ℹ 9,990 more rows
+```
+
+``` r
 act$max_confirm(d_sub[c("B", "O")], solve_for = "actor")
 #> # A tibble: 10,000 × 3
 #>        Ae     Ap      Aa
 #>     <dbl>  <dbl>   <dbl>
-#>  1 -0.764  0.945  1.88  
-#>  2 -1.32   0.556  0.589 
-#>  3  1.30   1.13  -0.0679
-#>  4  0.790  2.11   0.118 
-#>  5 -0.548  1.38   3.92  
-#>  6  1.61   0.514 -1.36  
-#>  7 -0.572 -0.292  2.36  
-#>  8 -0.889  0.858  0.224 
-#>  9  1.09   1.44  -0.0641
-#> 10 -1.73   1.71   2.51  
+#>  1  0.670  1.28  -0.389 
+#>  2  0.772  0.258 -1.28  
+#>  3  1.06   0.391 -1.11  
+#>  4 -1.08   0.582  0.0427
+#>  5 -1.13  -0.506 -0.189 
+#>  6 -1.08   0.265  1.04  
+#>  7  0.330  1.31   1.31  
+#>  8  0.442  1.89   0.449 
+#>  9  0.300  1.74   0.0165
+#> 10 -1.39   1.60   1.79  
 #> # ℹ 9,990 more rows
 ```
 
@@ -480,34 +546,51 @@ act$max_confirm(d_sub[c("B", "O")], solve_for = "actor")
 You can also create the deference scores discussed by Freeland & Hoey
 (2018).
 
-But this requires to set up a new dictionary, which you’ll have to do
-with the help of some external packages.
+But this requires to modify the existing dictionary so we get the right
+combination of identities and behaviors.
 
-For example:
+This seems to be the easiest way to do this:
 
 ``` r
-occupation_ratings <- actdata::epa_subset(dataset = "occs2019") |> 
-  dplyr::select(term, component, E, P, A) |> 
-  dplyr::rename_all(tolower) |> 
-  dplyr::rowwise() |> 
-  dplyr::mutate(ratings = list(c(e = e, p = p, a = a))) |> 
-  dplyr::ungroup() |> 
-  dplyr::select(term, component, ratings)
+occ <- interact(dictionary = "occs2019")
+#> → dictionary = list(dataset = "occs2019", group = "all")
+```
+
+``` r
+occ$dictionary
+#> # A tibble: 650 × 5
+#>    term                             component ratings   n         sd       
+#>    <chr>                            <chr>     <list>    <list>    <list>   
+#>  1 911_dispatcher                   identity  <dbl [3]> <dbl [3]> <dbl [3]>
+#>  2 accountant                       identity  <dbl [3]> <dbl [3]> <dbl [3]>
+#>  3 actor                            identity  <dbl [3]> <dbl [3]> <dbl [3]>
+#>  4 actress                          identity  <dbl [3]> <dbl [3]> <dbl [3]>
+#>  5 actuary_for_an_insurance_company identity  <dbl [3]> <dbl [3]> <dbl [3]>
+#>  6 acupuncturist                    identity  <dbl [3]> <dbl [3]> <dbl [3]>
+#>  7 administrative_assistant         identity  <dbl [3]> <dbl [3]> <dbl [3]>
+#>  8 advertising_executive            identity  <dbl [3]> <dbl [3]> <dbl [3]>
+#>  9 advertising_salesman             identity  <dbl [3]> <dbl [3]> <dbl [3]>
+#> 10 aerobics_instructor              identity  <dbl [3]> <dbl [3]> <dbl [3]>
+#> # ℹ 640 more rows
+```
+
+``` r
+
+occupations <- occ$dictionary$term ## save for later use
 
 defer_to <- act$dictionary |> 
   dplyr::filter(term == "defer_to")
 
-# Then you'll have to replace the original dictionary.
-
-act$dictionary <- dplyr::bind_rows(defer_to, occupation_ratings)
+## replace original dictionary
+occ$dictionary <- dplyr::bind_rows(defer_to, occ$dictionary)
 #> ✔ added new dictionary
 ```
 
 Note that a message appeared signaling that the replacement was
-succesful.
+successful.
 
 ``` r
-act
+occ
 #> 
 #> ── Interact Analysis ───────────────────────────────────────────────────────────
 #> ℹ Dictionary: External [!]
@@ -522,12 +605,12 @@ scores, and average over the As.
 
 ``` r
 events <- tidyr::crossing(
-  A = occupation_ratings$term,
+  A = occupations,
   B = "defer_to",
-  O = occupation_ratings$term
+  O = occupations
 )
 
-output <- act$deflection(events)
+output <- occ$deflection(events)
 
 output |> 
   group_by(A) |> 
