@@ -2,6 +2,8 @@
 # Figure out whether the interactors should be allowed to have different dictionaries etc.;
 # i.e., this allows for cross-culture and cross-gender comparisons
 
+# Add tests!
+
 
 #' Create a Definition of the Situation
 #'

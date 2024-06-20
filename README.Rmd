@@ -21,11 +21,11 @@ knitr::opts_chunk$set(
 [![R-CMD-check](https://github.com/acastroaraujo/actsims/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/acastroaraujo/actsims/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
--   `actsims` is an ACT package used for internal development of `interactShiny`
+-   `actsims` is an ACT package used for internal development of [**`interactShiny`**](https://acastroaraujo.shinyapps.io/interactShiny/)
 
 -   It is meant to be _fast_ and _easy_ to use.
 
--   It is integrated with the `actdata` package.
+-   It is integrated with the [**`actdata`**](https://github.com/ahcombs/actdata) package.
 
 -   It uses the R6 OOP system to keep better track of EPA ratings and transient impression equations.
 
