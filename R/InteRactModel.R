@@ -5,11 +5,11 @@
 #' Create a new [`InteRactModel`] object by specifying dictionary and
 #' equation names available from the `actdata` package.
 #'
-#' @param dictionary (character) dictionary name and group. The default is set to `list("usfullsurveyor2015", "all")`
+#' @param dictionary (character) dictionary name and group. The default is set to `list("usfullsurveyor2015", "all")`.
 #'
 #' See available options using [`actdata::dataset_keys()`]
 #'
-#' @param equations (character) equations name and group. The default is set to `list("usfullsurveyor2015", "all")`
+#' @param equations (character) equations name and group. The default is set to `list("usfullsurveyor2015", "all")`.
 #'
 #' See available options using [`actdata::equations`]
 #'

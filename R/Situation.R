@@ -1,24 +1,35 @@
 
-
-#definition_of_the_situation <- function(
-#    init_event = NULL,
-#    dictionary = list("usfullsurveyor2015", "all"),
-#    equations = list("us2010", "all")
-#) {
-#
-#  DefinitionSituation$new(init_event, dictionary, equations)
-#
-#}
-
-
-
-
-# Add situation object for interactShiny
-
-# This should have a counter for the number of rounds
-# Should be used with max_confirm method for every new round
 # Figure out whether the interactors should be allowed to have different dictionaries etc.;
 # i.e., this allows for cross-culture and cross-gender comparisons
+
+
+#' Create a Definition of the Situation
+#'
+#' @param init_event an ABO, where A is person1 and O is person2
+#' @param dictionary (character) dictionary name and group. The default is set to `list("usfullsurveyor2015", "all")`.
+#'
+#' See available options using [`actdata::dataset_keys()`]
+#'
+#' @param equations (character) equations name and group. The default is set to `list("usfullsurveyor2015", "all")`.
+#'
+#' See available options using [`actdata::equations`]
+#'
+#' Currently only equations with "`equation_type == impressionabo`" are valid.
+#'
+#' @return A `Situation` R6 object.
+#' @export
+#'
+start_situation <- function(
+    init_event = NULL,
+    dictionary = list("usfullsurveyor2015", "all"),
+    equations = list("us2010", "all")
+) {
+
+  Situation$new(init_event, dictionary, equations)
+
+}
+
+# Add documentation when time allows
 
 Situation <- R6::R6Class(
   classname = "Situation",
@@ -28,9 +39,9 @@ Situation <- R6::R6Class(
     history = NULL,
     engine = NULL,
 
-    initialize = function(init_event) {
+    initialize = function(init_event, dictionary = list("usfullsurveyor2015", "all"), equations = list("us2010", "all")) {
 
-      engine <- InteRactModel$new()
+      engine <- InteRactModel$new(dictionary, equations)
       init <- engine$deflection(init_event)
 
       start_row <- dplyr::tibble(time = 0L, person1 = "actor", person2 = "object")
@@ -82,7 +93,6 @@ Situation$set(
       dplyr::filter(component == "behavior") |>
       dplyr::select(dplyr::all_of(c("e", "p", "a")))
 
-    ## change this so that there's no ambiguity with identity/behavior
     transients_input[behavior_select] <- new_behavior
 
     EQ <- self$engine$equations
@@ -141,7 +151,6 @@ Situation$set(
       dplyr::filter(component == "behavior") |>
       dplyr::select(dplyr::all_of(c("e", "p", "a")))
 
-    ## change this so that there's no ambiguity with identity/behavior
     transients_input[behavior_select] <- new_behavior
 
     EQ <- self$engine$equations
@@ -179,35 +188,79 @@ Situation$set(
 )
 
 Situation$set(
-  "public", "solve_for",
-  function(what = c("behavior", "actor", "object")) {
+  "public", "optimal_behavior",
+  function(who = c("person1", "person2")) {
 
-    ## this is all wrong, I have no idea what I did...
-    ## check line 298 in InteractModel for clues...
+    who <- match.arg(who)
+    person_role <- tail(self$history$deflection, n = 1)[c("person1", "person2")]
 
-    browser()
-    what <- match.arg(what)
     all_select <- c(epa_selector("A"), epa_selector("B"), epa_selector("O"))
 
     transients <- tail(self$history$transients, n = 1)[all_select]
     fundamentals <- tail(self$history$fundamentals, n = 1)[all_select]
 
-    col_select <- switch(what,
-      "actor" = epa_selector("A"),
-      "behavior" = epa_selector("B"),
-      "object" = epa_selector("O")
-    )
+
+    if (person_role[[who]] == "object") {
+      fundamentals <- reverse_ao(fundamentals)
+      transients <- reverse_ao(transients)
+    }
+
+    col_select <- epa_selector("B")
+
+    transients[col_select] <- 1
+    fundamentals[col_select] <- 1
 
     EQ <- self$engine$equations
     colnames(EQ) <- substr(colnames(EQ), 1, 2)
     selection_matrix <- get_selection_matrix(EQ)
 
-    Im <- cbind(transients, get_data_matrix(transients, EQ)) # change
+    Im <- cbind(fundamentals, get_data_matrix(transients, EQ))
     S <- selection_matrix[, col_select]
     H <- get_h_matrix(EQ)
 
     out <- solve_equations(Im, S, H)
-    out
+    return(dplyr::as_tibble(out))
+
+  }
+)
+
+Situation$set(
+  "public", "reidentify",
+  function(who = c("person1", "person2")) {
+
+    who <- match.arg(who)
+    person_role <- tail(self$history$deflection, n = 1)[c("person1", "person2")]
+
+    all_select <- c(epa_selector("A"), epa_selector("B"), epa_selector("O"))
+
+    if (private$.time == 0) {
+      fundamentals <- tail(self$history$fundamentals, n = 1)[all_select] # transient inputs or fundamentals?
+      transients_in <- fundamentals
+    }
+
+    if (private$.time > 0) {
+      fundamentals <- tail(self$history$fundamentals, n = 1)[all_select]
+      transients_in <- tail(self$history$transients, n = 2)[all_select][1, ]
+      transients_in[epa_selector("B")] <- fundamentals[epa_selector("B")]
+    }
+
+    col_select <- switch(person_role[[who]],
+      "actor" = epa_selector("A"),
+      "object" = epa_selector("O")
+    )
+
+    fundamentals[col_select] <- 1
+    transients_in[col_select] <- 1
+
+    EQ <- self$engine$equations
+    colnames(EQ) <- substr(colnames(EQ), 1, 2)
+    selection_matrix <- get_selection_matrix(EQ)
+
+    Im <- cbind(fundamentals, get_data_matrix(transients_in, EQ))
+    S <- selection_matrix[, col_select]
+    H <- get_h_matrix(EQ)
+
+    out <- solve_equations(Im, S, H)
     return(dplyr::as_tibble(out))
 
   }
