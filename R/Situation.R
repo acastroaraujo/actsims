@@ -61,6 +61,13 @@ Situation <- R6::R6Class(
     }
   ),
 
+  active = list(
+    time = function(value) {
+      if (missing(value)) private$.time else cli::cli_abort("`time` cannot be changed", call = NULL)
+    }
+
+  ),
+
   private = list(
     .time = 0L,
     .add_time = function() {

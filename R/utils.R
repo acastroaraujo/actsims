@@ -22,7 +22,7 @@ validate_dictionary <- function(x) {
   names(x) <- c("dataset", "group")
 
   dicts <- purrr::map(actdata::get_dicts(), \(x) x@groups)
-  names(dicts) <- purrr::map_chr(get_dicts(), \(x) x@key)
+  names(dicts) <- purrr::map_chr(actdata::get_dicts(), \(x) x@key)
 
   ok <- x[["dataset"]] %in% names(dicts)
 
