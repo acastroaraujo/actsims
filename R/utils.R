@@ -38,11 +38,12 @@ validate_dictionary <- function(x) {
     cli::cli_abort("`{x['group']}` group not found in `{x[['dataset']]}` dictionary in {.pkg `actdata`} package", call = NULL)
   }
 
-  return(x)
+  out <- as.list(x) ## must return list for do.call in InteRactModel
+  return(out)
 
 }
 
-validate_equations <- function(x) {
+validate_impressionabo_equations <- function(x) {
 
   if (length(x) > 2) stop(call. = FALSE, "`equations` argument is malformed")
   if (length(x) == 1) {
@@ -72,7 +73,10 @@ validate_equations <- function(x) {
     cli::cli_abort("`{x[['group']]}` not found in `{x[['key']]}` equations in {.pkg `actdata`} package", call = NULL)
   }
 
-  return(x)
+  out <- as.list(x) ## must return list for do.call in InteRactModel
+  out$equation_type <- "impressionabo"
+
+  return(out)
 
 }
 
@@ -189,6 +193,77 @@ validate_epa <- function(epa) {
   return(out)
 
 }
+
+
+validate_traitid_equations <- function(x) {
+
+  if (length(x) > 2) stop(call. = FALSE, "`equations` argument is malformed")
+  if (length(x) == 1) {
+    x[[2]] <- "all"
+    cli::cli_bullets(c(">" = "equations = list(key = \"{x[[1]]}\", group = \"all\")"))
+  }
+
+  names(x) <- c("key", "group")
+
+  sub_eq <- dplyr::filter(actdata::equations, .data$key == !!x[["key"]])
+
+  if (!nrow(sub_eq) >= 1) {
+    cli::cli_abort("`{x[['key']]}` not found in {.pkg `actdata`} package", call = NULL)
+  }
+
+  ok <- "traitid" %in% unique(sub_eq[["equation_type"]])
+
+  if (!ok) {
+    cli::cli_abort("`{x[['key']]}` must have an `traitid` equation type in {.pkg `actdata`}", call = NULL)
+  }
+
+  groups <- sub_eq[sub_eq$equation_type == "traitid", ][["group"]]
+  ok <- x[["group"]] %in% groups
+
+  if (!ok) {
+    cli::cli_alert_warning("equations groups: {groups}")
+    cli::cli_abort("`{x[['group']]}` not found in `{x[['key']]}` equations in {.pkg `actdata`} package", call = NULL)
+  }
+
+  out <- as.list(x) ## must return list for do.call
+  out$equation_type <- "traitid"
+
+  return(out)
+
+}
+
+
+validate_mi_events <- function(events, dict) {
+
+  ok <- all(purrr::map_lgl(events, is.character))
+  if (!ok) { ## avoid subsetting with factors [!]
+    events[] <- lapply(events, as.character)
+  }
+
+  identities <- dict[dict$component == "identity", ][["term"]]
+  modifiers <- dict[dict$component == "modifier", ][["term"]]
+
+  terms <- unique(events[["M"]])
+  i <- terms %in% modifiers
+  ok <- all(i)
+
+  if (!ok) {
+    cli::cli_abort("`{terms[!i]} is not a `modifier` in `$dictionary`", call = NULL)
+  }
+
+  terms <- unique(events[["I"]])
+  i <- terms %in% identities
+  ok <- all(i)
+
+  if (!ok) {
+    cli::cli_abort("`{terms[!i]} is not an `identity` in `$dictionary`", call = NULL)
+  }
+
+  return(events)
+
+}
+
+
 
 # Print Methods -----------------------------------------------------------
 

@@ -194,6 +194,94 @@ act$max_confirm(d_sub[c("A", "B")], solve_for = "object")
 act$max_confirm(d_sub[c("B", "O")], solve_for = "actor")
 ```
 
+# Experimental
+
+The things here are still experimental. The API may change a lot.
+
+## Modifiers
+
+You can create modified identities by combining them with modifier terms in the ACT dictionaries. These use the `traitid` equations in the `actdata` package.
+
+```{r}
+modify <- create_modifier(dictionary = list("usfullsurveyor2015", "all"), equations = list("us2010", "all"))
+
+modify(list(M = "tired", I = "ceo"))
+
+out <- modify(
+  data.frame(
+    M = c("tired", "taciturn", "taciturn"), 
+    I = c("academic", "academic", "buddhist")
+  )
+)
+
+out |> tidyr::unnest_wider(ratings)
+```
+
+_Note. The `create_modifier` function creates the `modify` function, which has built-in dictionaries and equations. This setup is still experimental._
+
+## Situations
+
+This function is what powers the Analyze Events pane in [`interactShiny`](https://acastroaraujo.shinyapps.io/interactShiny/)
+
+```{r}
+situation <- define_situation(
+  agent1 = interact(), ## the idea is that each agent can be set up with
+  agent2 = interact()  ## different dictionaries and equations.
+)
+
+situation$history
+situation$active  ## one of the two agents will be active at any given time
+
+## start anew
+situation$start(list(A = "employer", B = "hurt", O = "employee")) ## here `agent1` is `A`
+situation$history
+
+opt_beh <- situation$optimal_behavior("agent2")
+opt_beh
+
+situation$agent2$closest_terms(opt_beh, "behavior")[1:5]
+
+situation$active <- "agent2" ## one way of changing active agent
+
+situation$new(list(A = "employee", B = "pull_away_from", O = "employer"))
+situation$history$deflection
+
+situation$
+  activate("agent1")$ ## another way of changing active agent
+  new(list(A = "employer", B = "confront", O = "employee"))
+
+situation$history$deflection
+```
+
+This `situation` allows for "method chaining" using the `$` operator. This type of code is not very R like.
+
+```{r}
+situation$
+  activate("agent1")$
+  start(list(A = "employer", B = "hurt", O = "employee"))$ 
+  activate("agent2")$
+  new(list(A = "employee", B = "pull_away_from", O = "employer"))$
+  activate("agent1")$
+  new(list(A = "employer", B = "confront", O = "employee"))$
+  history
+  
+situation$history$deflection
+```
+
+You can also use R's pipe operator using the `sttn_*` functions.
+
+```{r}
+df <- situation |> 
+  sttn_activate("agent1") |> 
+  sttn_start(list(A = "employer", B = "hurt", O = "employee")) |> 
+  sttn_activate("agent2") |> 
+  sttn_new(list(A = "employee", B = "pull_away_from", O = "employer")) |> 
+  sttn_activate("agent1") |> 
+  sttn_new(list(A = "employer", B = "confront", O = "employee")) |> 
+  sttn_extract()
+  
+df$deflection
+```
 
 ## Deference Score
 
@@ -204,13 +292,15 @@ But this requires to modify the existing dictionary so we get the right combinat
 This seems to be the easiest way to do this:
 
 ```{r}
+act <- interact()
+
+defer_to <- act$dictionary |> ## save for later use
+  dplyr::filter(term == "defer_to")
+
 occ <- interact(dictionary = "occs2019")
 occ$dictionary
 
 occupations <- occ$dictionary$term ## save for later use
-
-defer_to <- act$dictionary |> 
-  dplyr::filter(term == "defer_to")
 
 ## replace original dictionary
 occ$dictionary <- dplyr::bind_rows(defer_to, occ$dictionary)

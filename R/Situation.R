@@ -1,110 +1,135 @@
 
-# Figure out whether the interactors should be allowed to have different dictionaries etc.;
-# i.e., this allows for cross-culture and cross-gender comparisons
-
-# Add tests!
-
-
 #' Create a Definition of the Situation
 #'
-#' @param init_event an ABO, where A is person1 and O is person2
-#' @param dictionary (character) dictionary name and group. The default is set to `list("usfullsurveyor2015", "all")`.
-#'
-#' See available options using [`actdata::dataset_keys()`]
-#'
-#' @param equations (character) equations name and group. The default is set to `list("usfullsurveyor2015", "all")`.
-#'
-#' See available options using [`actdata::equations`]
-#'
-#' Currently only equations with "`equation_type == impressionabo`" are valid.
+#' @param agent1 an `InteRactModel` created by the `interact()` function
+#' @param agent2 an `InteRactModel` created by the `interact()` function
 #'
 #' @return A `Situation` R6 object.
 #' @export
 #'
-start_situation <- function(
-    init_event = NULL,
-    dictionary = list("usfullsurveyor2015", "all"),
-    equations = list("us2010", "all")
-) {
-
-  Situation$new(init_event, dictionary, equations)
-
+define_situation <- function(agent1, agent2) {
+  ok <- inherits(agent1, "InteRactModel") & inherits(agent2, "InteRactModel")
+  if (!ok) cli::cli_abort("all agents must be of class `InteRactModel`", call = NULL)
+  Situation$new(agent1, agent2)
 }
 
-# Add documentation when time allows
 
+# Situation ----------------------------------------------------------------
+
+#' @title Situation Objects
+#'
+#' @name Situation
+#' @description A `Situation` object is an [R6][R6::R6Class] object created
+#'   by the [define_situation()] function.
+#'
+#'   The object stores two InteRactModel objects.
+#'
+#'   It also provides methods for starting situations (`$start`), adding new
+#'   interactions (`$new`), calculating optimal behaviors (`$optimal_behavior`),
+#'   and reidentification (`$reidentify`).
+#'
+#'   You can alternatively use the `sttn_*` family of functions for the same purposes.
+#'
 Situation <- R6::R6Class(
   classname = "Situation",
-
   public = list(
-    init_event = NULL,
     history = NULL,
-    engine = NULL,
+    agent1 = NULL,
+    agent2 = NULL,
 
-    initialize = function(init_event, dictionary = list("usfullsurveyor2015", "all"), equations = list("us2010", "all")) {
+    initialize = function(agent1, agent2) {
 
-      engine <- InteRactModel$new(dictionary, equations)
-      init <- engine$deflection(init_event)
+      self$agent1 <- agent1$clone()
+      self$agent2 <- agent2$clone()
+      private$.active <- "agent1"
 
-      start_row <- dplyr::tibble(time = 0L, person1 = "actor", person2 = "object")
+    },
+
+    start = function(init_event) {
+
+      private$.time <- 0L
+      actor <- self$active
+      obj <- setdiff(paste0("agent", 1:2), actor)
+      out <- self[[actor]]$deflection(init_event)
+      start_row <- dplyr::tibble(time = 0L, {{actor}} := "A", {{obj}} := "O")
       start_row <- dplyr::bind_cols(start_row, init_event)
-
-      deflection <- dplyr::bind_cols(start_row, init["deflection"])
-
-      fundamentals <- dplyr::bind_cols(start_row, get_fundamentals(init))
-      transients <- dplyr::bind_cols(start_row, get_transients(init))
-      element_wise_deflection <- dplyr::bind_cols(start_row, get_element_wise_deflection(init))
-
+      deflection <- dplyr::bind_cols(start_row, out["deflection"])
+      fundamentals <- dplyr::bind_cols(start_row, get_fundamentals(out))
+      transients <- dplyr::bind_cols(start_row, get_transients(out))
+      element_wise_deflection <- dplyr::bind_cols(start_row, get_element_wise_deflection(out))
       self$history <- list(deflection = deflection, fundamentals = fundamentals, transients = transients, element_wise_deflection = element_wise_deflection)
-      self$engine <- engine
+      invisible(self)
 
-    }
-  ),
+    },
 
-  active = list(
-    time = function(value) {
-      if (missing(value)) private$.time else cli::cli_abort("`time` cannot be changed", call = NULL)
-    }
-
-  ),
-
-  private = list(
-    .time = 0L,
-    .add_time = function() {
-      private$.time <- private$.time + 1L
+    activate = function(who) {
+      self$active <- who
       invisible(self)
     }
-  )
 
-)
+  ),
+   active = list( ## this `active` is for "active bindings" !!
+     time = function(value) {
+       if (missing(value)) private$.time else cli::cli_abort("`time` cannot be changed", call = NULL)
+     },
+
+     active = function(value) {
+       if (missing(value)) {
+         private$.active
+       } else {
+         if (!value %in% paste0("agent", 1:2)) cli::cli_abort("must be either `agent1` or `agent2`")
+         private$.active <- value
+         invisible(self)
+       }
+     }
+
+   ),
+   private = list(
+     .active = NULL,
+     .time = NULL,
+     .add_time = function() {
+       private$.time <- private$.time + 1L
+       invisible(self)
+     }
+   )
+ )
+
+
+
+# New Event ---------------------------------------------------------------
 
 Situation$set(
-  "public", "next_person1",
-  function(events) {
+  "public", "new",
+  function(event) {
 
-    fundamentals <- stack_abo_ratings(events, self$engine$dictionary)
+    if (is.null(self$history)) {
+      cli::cli_abort("must `$start` the situation first", call = NULL)
+    }
+
+    actor <- self$active
+    obj <- setdiff(paste0("agent", 1:2), actor)
+
+    fundamentals <- stack_abo_ratings(event, self[[actor]]$dictionary)
     actor_select <- epa_selector("A")
     behavior_select <- epa_selector("B")
     object_select <- epa_selector("O")
 
-    transients_input <- tail(self$history$transients, n = 1)
-
     previous <- tail(self$history$transients, n = 1)
     transients_input <- previous[c(actor_select, behavior_select, object_select)]
 
-    ok <- previous$person1 == "actor" && previous$person2 == "object"
+    ok <- previous[[actor]] == "A"
 
     if (!ok) {
       transients_input <- reverse_ao(transients_input)
     }
 
-    new_behavior <- self$engine$fundamentals(events$B) |>
+    new_behavior <- self[[actor]]$fundamentals(event$B) |>
       dplyr::filter(component == "behavior") |>
       dplyr::select(dplyr::all_of(c("e", "p", "a")))
 
     transients_input[behavior_select] <- new_behavior
 
-    EQ <- self$engine$equations
+    EQ <- self[[actor]]$equations
     colnames(EQ) <- substr(colnames(EQ), 1, 2)
 
     M <- get_data_matrix(transients_input, EQ)
@@ -119,8 +144,8 @@ Situation$set(
 
     private$.add_time()
 
-    new_row <- dplyr::tibble(time = private$.time, person1 = "actor", person2 = "object")
-    new_row <- dplyr::bind_cols(new_row, events)
+    new_row <- dplyr::tibble(time = private$.time, {{actor}} := "A", {{obj}} := "O")
+    new_row <- dplyr::bind_cols(new_row, event)
 
     out <- list(
       deflection = dplyr::bind_cols(new_row, deflection),
@@ -133,83 +158,26 @@ Situation$set(
       self$history[[x]] <- dplyr::bind_rows(self$history[[x]], out[[x]])
     }
 
-    invisible(self$history)
+    invisible(self)
 
   }
 )
 
-Situation$set(
-  "public", "next_person2",
-  function(events) {
-
-    fundamentals <- stack_abo_ratings(events, self$engine$dictionary)
-    actor_select <- epa_selector("A")
-    behavior_select <- epa_selector("B")
-    object_select <- epa_selector("O")
-
-    previous <- tail(self$history$transients, n = 1)
-    transients_input <- previous[c(actor_select, behavior_select, object_select)]
-
-    ok <- previous$person2 == "actor" && previous$person1 == "object"
-
-    if (!ok) {
-      transients_input <- reverse_ao(transients_input)
-    }
-
-    new_behavior <- self$engine$fundamentals(events$B) |>
-      dplyr::filter(component == "behavior") |>
-      dplyr::select(dplyr::all_of(c("e", "p", "a")))
-
-    transients_input[behavior_select] <- new_behavior
-
-    EQ <- self$engine$equations
-    colnames(EQ) <- substr(colnames(EQ), 1, 2)
-
-    M <- get_data_matrix(transients_input, EQ)
-
-    transients_out <- M %*% EQ
-
-    element_wise_deflection <- (transients_out - fundamentals)^2
-    deflection <- list(unname(rowSums(element_wise_deflection)))
-
-    names(deflection) <- "deflection"
-    deflection <- dplyr::as_tibble(deflection)
-
-    private$.add_time()
-
-    new_row <- dplyr::tibble(time = private$.time, person1 = "object", person2 = "actor")
-    new_row <- dplyr::bind_cols(new_row, events)
-
-    out <- list(
-      deflection = dplyr::bind_cols(new_row, deflection),
-      fundamentals = dplyr::bind_cols(new_row, fundamentals),
-      transients = dplyr::bind_cols(new_row, transients_out),
-      element_wise_deflection = dplyr::bind_cols(new_row, element_wise_deflection)
-    )
-
-    for (x in names(out)) {
-      self$history[[x]] <- dplyr::bind_rows(self$history[[x]], out[[x]])
-    }
-
-    invisible(self$history)
-
-  }
-)
+# Optimal Behavior --------------------------------------------------------
 
 Situation$set(
   "public", "optimal_behavior",
-  function(who = c("person1", "person2")) {
+  function(who = c("agent1", "agent2")) {
 
     who <- match.arg(who)
-    person_role <- tail(self$history$deflection, n = 1)[c("person1", "person2")]
+    agent_role <- tail(self$history$deflection, n = 1)[c("agent1", "agent2")]
 
     all_select <- c(epa_selector("A"), epa_selector("B"), epa_selector("O"))
 
     transients <- tail(self$history$transients, n = 1)[all_select]
     fundamentals <- tail(self$history$fundamentals, n = 1)[all_select]
 
-
-    if (person_role[[who]] == "object") {
+    if (agent_role[[who]] == "O") {
       fundamentals <- reverse_ao(fundamentals)
       transients <- reverse_ao(transients)
     }
@@ -219,7 +187,7 @@ Situation$set(
     transients[col_select] <- 1
     fundamentals[col_select] <- 1
 
-    EQ <- self$engine$equations
+    EQ <- self[[who]]$equations
     colnames(EQ) <- substr(colnames(EQ), 1, 2)
     selection_matrix <- get_selection_matrix(EQ)
 
@@ -229,16 +197,17 @@ Situation$set(
 
     out <- solve_equations(Im, S, H)
     return(dplyr::as_tibble(out))
-
   }
 )
 
+# Reidentify --------------------------------------------------------------
+
 Situation$set(
   "public", "reidentify",
-  function(who = c("person1", "person2")) {
+  function(who = c("agent1", "agent2")) {
 
     who <- match.arg(who)
-    person_role <- tail(self$history$deflection, n = 1)[c("person1", "person2")]
+    agent_role <- tail(self$history$deflection, n = 1)[c("agent1", "agent2")]
 
     all_select <- c(epa_selector("A"), epa_selector("B"), epa_selector("O"))
 
@@ -253,15 +222,15 @@ Situation$set(
       transients_in[epa_selector("B")] <- fundamentals[epa_selector("B")]
     }
 
-    col_select <- switch(person_role[[who]],
-      "actor" = epa_selector("A"),
-      "object" = epa_selector("O")
+    col_select <- switch(agent_role[[who]],
+      "A" = epa_selector("A"),
+      "O" = epa_selector("O")
     )
 
     fundamentals[col_select] <- 1
     transients_in[col_select] <- 1
 
-    EQ <- self$engine$equations
+    EQ <- self[[who]]$equations
     colnames(EQ) <- substr(colnames(EQ), 1, 2)
     selection_matrix <- get_selection_matrix(EQ)
 
@@ -275,5 +244,49 @@ Situation$set(
   }
 )
 
+# Pipe Functions ----------------------------------------------------------
+
+
+#' @title Situation Functions
+#' @name sttn_family
+#' @export
+#'
+#' @description Start, new, activate, and extract.
+#'
+#' @param x an R6 "`Situation`" object created by the `define_situation()` function.
+#'
+#' @param which (character) either "agent1" or "agent2."
+#'
+#' @param event an ABO event.
+#'
+#' @return A modified "`Situation`" object.
+
+#' @rdname sttn_family
+#' @export
+sttn_activate <- function(x, which) {
+  stopifnot("`x` must be a `Situation` R6 object" = inherits(x, "Situation"))
+  x$active <- which
+  invisible(x)
+}
+
+#' @rdname sttn_family
+#' @export
+sttn_start <- function(x, event) {
+  stopifnot("`x` must be a `Situation` R6 object" = inherits(x, "Situation"))
+  x$start(event)
+}
+
+#' @rdname sttn_family
+#' @export
+sttn_new <- function(x, event) {
+  stopifnot("`x` must be a `Situation` R6 object" = inherits(x, "Situation"))
+  x$new(event)
+}
+
+#' @rdname sttn_family
+#' @export
+sttn_extract <- function(x) {
+  x$history
+}
 
 

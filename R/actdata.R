@@ -1,74 +1,40 @@
 
 #' @import actdata
 
-coef_dict <- c(
-  "Z000000000" = "(Intercept)",
-  "Z100000000" = "Ae",
-  "Z010000000" = "Ap",
-  "Z001000000" = "Aa",
-  "Z000100000" = "Be",
-  "Z000010000" = "Bp",
-  "Z000001000" = "Ba",
-  "Z000000100" = "Oe",
-  "Z000000010" = "Op",
-  "Z000000001" = "Oa",
-  "Z100100000" = "Ae:Be",
-  "Z100010000" = "Ae:Bp",
-  "Z100001000" = "Ae:Ba",
-  "Z100000100" = "Ae:Oe",
-  "Z100000010" = "Ae:Op",
-  "Z100000001" = "Ae:Oa",
-  "Z010100000" = "Ap:Be",
-  "Z010010000" = "Ap:Bp",
-  "Z010001000" = "Ap:Ba",
-  "Z010000100" = "Ap:Oe",
-  "Z010000010" = "Ap:Op",
-  "Z010000001" = "Ap:Oa",
-  "Z001100000" = "Aa:Be",
-  "Z001010000" = "Aa:Bp",
-  "Z001001000" = "Aa:Ba",
-  "Z001000100" = "Aa:Oe",
-  "Z001000010" = "Aa:Op",
-  "Z001000001" = "Aa:Oa",
-  "Z000100100" = "Be:Oe",
-  "Z000100010" = "Be:Op",
-  "Z000100001" = "Be:Oa",
-  "Z000010100" = "Bp:Oe",
-  "Z000010010" = "Bp:Op",
-  "Z000010001" = "Bp:Oa",
-  "Z000001100" = "Ba:Oe",
-  "Z000001010" = "Ba:Op",
-  "Z000001001" = "Ba:Oa",
-  "Z100100100" = "Ae:Be:Oe",
-  "Z100100010" = "Ae:Be:Op",
-  "Z100100001" = "Ae:Be:Oa",
-  "Z100010100" = "Ae:Bp:Oe",
-  "Z100010010" = "Ae:Bp:Op",
-  "Z100010001" = "Ae:Bp:Oa",
-  "Z100001100" = "Ae:Ba:Oe",
-  "Z100001010" = "Ae:Ba:Op",
-  "Z100001001" = "Ae:Ba:Oa",
-  "Z010100100" = "Ap:Be:Oe",
-  "Z010100010" = "Ap:Be:Op",
-  "Z010100001" = "Ap:Be:Oa",
-  "Z010010100" = "Ap:Bp:Oe",
-  "Z010010010" = "Ap:Bp:Op",
-  "Z010010001" = "Ap:Bp:Oa",
-  "Z010001100" = "Ap:Ba:Oe",
-  "Z010001010" = "Ap:Ba:Op",
-  "Z010001001" = "Ap:Ba:Oa",
-  "Z001100100" = "Aa:Be:Oe",
-  "Z001100010" = "Aa:Be:Op",
-  "Z001100001" = "Aa:Be:Oa",
-  "Z001010100" = "Aa:Bp:Oe",
-  "Z001010010" = "Aa:Bp:Op",
-  "Z001010001" = "Aa:Bp:Oa",
-  "Z001001100" = "Aa:Ba:Oe",
-  "Z001001010" = "Aa:Ba:Op",
-  "Z001001001" = "Aa:Ba:Oa"
-)
+z_decode <- function(
+    x,                   ## Character vector with Z* coded names (Heise 2007, 121-3)
+    equation_type = c(
+      "impressionabo",   ## This is how the equation types are
+      "impressionabos",  ## specified in the actdata package.
+      "selfdir",         ##
+      "emotionid",       ## See `actdata::equations` for more.
+      "traitid")
+) {
+
+  equation_type <- match.arg(equation_type)
+
+  terms <- switch(equation_type,
+    "impressionabo" = c("A", "B", "O"),
+    "impressionabos" = c("A", "B", "O", "S"),
+    "selfdir" = c("A", "B"),
+    "emotionid" = c("M", "I"),
+    "traitid" = c("M", "I")
+  )
+
+  index <- lapply(strsplit(sub(".", "", x), ""), \(x) as.logical(as.integer(x)))
+  elements <- paste0(rep(terms, each = 3), rep(c("e", "p", "a"), times = length(terms)))
+
+  out <- purrr::map_chr(index, function(i) {
+    if (sum(i) == 0) "(Intercept)" else paste(elements[i], collapse = ":")
+  })
+
+  return(out)
+
+}
 
 get_dictionary <- function(dataset, group) {
+
+  vars <- c("term", "component", "ratings", "n", "sd")
 
   actdata::epa_subset(dataset = dataset) |>
     dplyr::filter(.data$group == !!group) |>
@@ -77,23 +43,47 @@ get_dictionary <- function(dataset, group) {
     dplyr::mutate(ratings = list(c(e = .data$e, p = .data$p, a = .data$a))) |>
     dplyr::mutate(n = list(c(e = .data$n_e, p = .data$n_p, a = .data$n_a))) |>
     dplyr::mutate(sd = list(c(e = .data$sd_e, p = .data$sd_p, a = .data$sd_a))) |>
-    dplyr::select("term", "component", "ratings", "n", "sd") |>
+    dplyr::select(dplyr::any_of(vars)) |>
     dplyr::ungroup()
 
 }
 
-get_equation <- function(key, group) {
+get_impressionabo_equation <- function(key, group) {
 
-  eq_df <- actdata::equations |>
+  eq <- actdata::equations |>
     dplyr::filter(.data$key == !!key, .data$equation_type == "impressionabo", .data$group == !!group) |>
     dplyr::pull(.data$df) |>
-    unlist(recursive = FALSE) |>
-    as.data.frame()
+    unlist(recursive = FALSE)
 
-  out <- as.matrix(eq_df[, -1])
-  rownames(out) <- coef_dict[eq_df$V1]
+  out <- as.matrix(as.data.frame(eq[-1]))
   colnames(out) <- paste0(rep(c("A", "B", "O"), each = 3), rep(c("e", "p", "a"), times = 3))
+  rownames(out) <- z_decode(eq[[1]], equation_type = "impressionabo")
+
   return(out)
 
 }
+
+get_equation <- function(key, group, equation_type) {
+
+  eq <- actdata::equations |>
+    dplyr::filter(.data$key == !!key, .data$equation_type == !!equation_type, .data$group == !!group) |>
+    dplyr::pull(.data$df) |>
+    unlist(recursive = FALSE)
+
+  terms <- switch(equation_type,
+    "impressionabo" = c("A", "B", "O"),
+    "impressionabos" = c("A", "B", "O", "S"),
+    "selfdir" = c("A", "B"),
+    "emotionid" = c("I"),
+    "traitid" = c("I")
+  )
+
+  out <- as.matrix(as.data.frame(eq[-1]))
+  colnames(out) <- paste0(rep(terms, each = 3), rep(c("e", "p", "a"), times = length(terms)))
+  rownames(out) <- z_decode(eq[[1]], equation_type)
+
+  return(out)
+
+}
+
 

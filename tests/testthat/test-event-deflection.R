@@ -1,5 +1,4 @@
 
-
 test_that("subsetting methods work in attribute datasets", {
 
   act <- interact(dictionary = "usfullsurveyor2015", equations = "us2010")
@@ -22,19 +21,25 @@ test_that("subsetting methods work in attribute datasets", {
   expect_equal(nrow(out), nrow(get_element_wise_deflection(out)))
 
   out <- d[sample(nrow(d), 1), ]
-  sub <- act$fundamentals(out$A)
+  sub <- act$fundamentals(out$A) |>
+    dplyr::filter(component == "identity")
+
   expect_equal(
     unname(unlist(sub[c("e", "p", "a")])),
     unname(unlist(get_fundamentals(out)[1:3]))
   )
 
-  sub <- act$fundamentals(out$B)
+  sub <- act$fundamentals(out$B) |>
+    dplyr::filter(component == "behavior")
+
   expect_equal(
     unname(unlist(sub[c("e", "p", "a")])),
     unname(unlist(get_fundamentals(out)[4:6]))
   )
 
-  sub <- act$fundamentals(out$O)
+  sub <- act$fundamentals(out$O) |>
+    dplyr::filter(component == "identity")
+
   expect_equal(
     unname(unlist(sub[c("e", "p", "a")])),
     unname(unlist(get_fundamentals(out)[7:9]))
@@ -54,19 +59,25 @@ test_that("subsetting methods work in attribute datasets", {
   expect_equal(nrow(out), nrow(get_element_wise_deflection(out)))
 
   out <- d[sample(nrow(d), 1), ]
-  sub <- act$fundamentals(out$A)
+  sub <- act$fundamentals(out$A) |>
+    dplyr::filter(component == "identity")
+
   expect_equal(
     unname(unlist(sub[c("e", "p", "a")])),
     unname(unlist(get_fundamentals(out)[1:3]))
   )
 
-  sub <- act$fundamentals(out$B)
+  sub <- act$fundamentals(out$B) |>
+    dplyr::filter(component == "behavior")
+
   expect_equal(
     unname(unlist(sub[c("e", "p", "a")])),
     unname(unlist(get_fundamentals(out)[4:6]))
   )
 
-  sub <- act$fundamentals(out$O)
+  sub <- act$fundamentals(out$O) |>
+    dplyr::filter(component == "identity")
+
   expect_equal(
     unname(unlist(sub[c("e", "p", "a")])),
     unname(unlist(get_fundamentals(out)[7:9]))

@@ -19,6 +19,15 @@
 #'
 #' @export
 interact <- function(dictionary = list("usfullsurveyor2015", "all"), equations = list("us2010", "all")) {
+
+  if (missing(dictionary)) {
+    cli::cli_bullets(c(">" = "dictionary = list(dataset = \"usfullsurveyor2015\", group = \"all\")"))
+  }
+
+  if (missing(equations)) {
+    cli::cli_bullets(c(">" = "equations = list(key = \"us2010\", group = \"all\")"))
+  }
+
   InteRactModel$new(dictionary, equations)
 }
 
@@ -54,13 +63,11 @@ InteRactModel <- R6::R6Class(
   public = list(
     initialize = function(dictionary = list("usfullsurveyor2015", "all"), equations = list("us2010", "all")) {
 
-      ## use the missing() function to make message show up whenever something is missing ??
-
-      equations <- validate_equations(equations)
       dictionary <- validate_dictionary(dictionary)
+      equations <- validate_impressionabo_equations(equations)
 
-      private$.equations <- do.call(get_equation, as.list(equations))
-      private$.dictionary <- do.call(get_dictionary, as.list(dictionary))
+      private$.equations <- do.call(get_equation, equations)
+      private$.dictionary <- do.call(get_dictionary, dictionary)
       private$.selection_matrix <- get_selection_matrix(private$.equations)
 
       ## for printing
@@ -68,7 +75,6 @@ InteRactModel <- R6::R6Class(
       private$.group_dict <- dictionary[[2]]
       private$.eq <- equations[[1]]
       private$.group_eq <- equations[[2]]
-
 
     },
     print = function() {
@@ -98,7 +104,7 @@ InteRactModel <- R6::R6Class(
       if (missing(value)) {
         out <- private$.equations
         # The print looks better with the "'" to indicate predictions
-        # But the code will break apart if we actually replace the original
+        # But the code breaks apart when we actually replace the original
         # equation column names.
         colnames(out) <- paste0(colnames(out), "'")
         out
@@ -163,10 +169,6 @@ fundamentals <- function(x) {
 
 }
 InteRactModel$set("public", "fundamentals", fundamentals)
-
-
-
-
 
 
 ## Event Deflection --------------------------------------------------------
@@ -387,6 +389,8 @@ InteRactModel$set(
     return(out)
 
   })
+
+
 
 
 

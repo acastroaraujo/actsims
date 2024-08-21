@@ -39,7 +39,6 @@ stack_pair_ratings <- function(events, solve_for, dict) {
 
   plug <- matrix(1, nrow = nrow(as.data.frame(events)), ncol = 3)
 
-
   out <- switch(solve_for,
     "actor" = cbind(plug, behaviors[events[["B"]], , drop = FALSE], identities[events[["O"]], , drop = FALSE]),
     "behavior" = cbind(identities[events[["A"]], , drop = FALSE], plug, identities[events[["O"]], , drop = FALSE]),
@@ -65,6 +64,29 @@ epa_selector <- function(x = c("A", "B", "O")) {
   paste0(rep(x, 3), c("e", "p", "a"))
 }
 
+stack_mi_ratings <- function(events, dict) {
+
+  m <- dict[dict[["component"]] == "modifier", ]
+  i <- dict[dict[["component"]] == "identity", ]
+
+  identities <- purrr::set_names(i[["ratings"]], nm = i[["term"]]) |>
+    do.call(what = "rbind")
+
+  modifiers <- purrr::set_names(m[["ratings"]], nm = m[["term"]]) |>
+    do.call(what = "rbind")
+
+  out <- cbind(
+    modifiers[events[["M"]], , drop = FALSE],
+    identities[events[["I"]], , drop = FALSE]
+  )
+
+  rownames(out) <- NULL
+  colnames(out) <- paste0(rep(c("M", "I"), each = 3), rep(c("e", "p", "a"), times = 2))
+
+  return(out)
+
+}
+
 # Matrices ----------------------------------------------------------------
 
 get_data_matrix <- function(data, eq) {
@@ -77,10 +99,10 @@ get_selection_matrix <- function(B) {
 
   ## `B` is private$.equations
 
-  I <- diag(9)
+  I <- diag(ncol(B))
 
-  ## The selection matrix stacks up a 9x9 identity matrix on top of the next
-  ## matrix.
+  ## The selection matrix stacks up a 9x9 identity matrix (in case of ABO
+  ## situation) on top of the next matrix.
 
   out <- sapply(colnames(B), function(x) {
     ## grepl outputs TRUE whenever there is a match between colnames(B)
