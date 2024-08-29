@@ -1,4 +1,9 @@
 
+# To do:
+# - Add generalized emotion thing for after events.
+# - Add the modifier and characteristic emotion to `InteRactModel`
+
+
 create_characteristic_emotion <- function(dictionary = list("usfullsurveyor2015", "all"), equations = list("us2010", "male")) {
 
   dictionary <- validate_dictionary(dictionary)
@@ -9,11 +14,12 @@ create_characteristic_emotion <- function(dictionary = list("usfullsurveyor2015"
 
   function(events) {
 
-    # events <- validate_XX_events(events, dict)
+    events <- validate_ce_events(events, dict)
     # fundamentals <- stack_mi_ratings(events, dict)
     # fundamentals <- as.data.frame(fundamentals)
-    fundamentals <- dict |> dplyr::filter(term == events[["I"]], component == "identity") |> dplyr::select(ratings)
-    fundamentals <- tidyr::unnest_wider(fundamentals, ratings)
+
+    fundamentals <- dict |> dplyr::filter(.data$term == events[["I"]], .data$component == "identity") |> dplyr::pull("ratings")
+    fundamentals <- dplyr::bind_rows(fundamentals)
     colnames(fundamentals) <- paste0("I", colnames(fundamentals))
 
     data <- dplyr::bind_cols(fundamentals, dplyr::tibble(Me = 1, Mp = 1, Ma = 1))
@@ -34,7 +40,6 @@ create_characteristic_emotion <- function(dictionary = list("usfullsurveyor2015"
     out <- solve(X %*% S, r - X %*% t(g))
 
     return(dplyr::as_tibble(t(out)))
-
 
   }
 }

@@ -301,6 +301,66 @@ validate_mi_events <- function(events, dict) {
 }
 
 
+validate_emotionid_equations <- function(x) {
+
+  if (length(x) > 2) stop(call. = FALSE, "`equations` argument is malformed")
+  if (length(x) == 1) {
+    x[[2]] <- "all"
+    cli::cli_bullets(c(">" = "equations = list(key = \"{x[[1]]}\", group = \"all\")"))
+  }
+
+  names(x) <- c("key", "group")
+
+  sub_eq <- dplyr::filter(actdata::equations, .data$key == !!x[["key"]])
+
+  if (!nrow(sub_eq) >= 1) {
+    cli::cli_abort("`{x[['key']]}` not found in {.pkg `actdata`} package", call = NULL)
+  }
+
+  ok <- "emotionid" %in% unique(sub_eq[["equation_type"]])
+
+  if (!ok) {
+    cli::cli_abort("`{x[['key']]}` must have an `traitid` equation type in {.pkg `actdata`}", call = NULL)
+  }
+
+  groups <- sub_eq[sub_eq$equation_type == "emotionid", ][["group"]]
+  ok <- x[["group"]] %in% groups
+
+  if (!ok) {
+    cli::cli_alert_warning("equations groups: {groups}")
+    cli::cli_abort("`{x[['group']]}` not found in `{x[['key']]}` equations in {.pkg `actdata`} package", call = NULL)
+  }
+
+  out <- as.list(x) ## must return list for do.call
+  out$equation_type <- "emotionid"
+
+  return(out)
+
+}
+
+
+validate_ce_events <- function(events, dict) {
+
+  ok <- all(purrr::map_lgl(events, is.character))
+  if (!ok) { ## avoid subsetting with factors [!]
+    events[] <- lapply(events, as.character)
+  }
+
+  identities <- dict[dict$component == "identity", ][["term"]]
+
+  terms <- unique(events[["I"]])
+  i <- terms %in% identities
+  ok <- all(i)
+
+  if (!ok) {
+    cli::cli_abort("`{terms[!i]} is not an `identity` in `$dictionary`", call = NULL)
+  }
+
+  return(events)
+
+}
+
+
 
 # Print Methods -----------------------------------------------------------
 
