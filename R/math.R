@@ -125,7 +125,7 @@ get_h_matrix <- function(X) {
 solve_equations <- function(Im, S, H) {
 
   # `Im` is a matrix with every row corresponding to the diagonal
-  # in the `I` matrix used in Heisse's equations.
+  # in the `I` matrix used in Heise's equations.
 
   if (requireNamespace("pbapply", quietly = TRUE)) {
     loop <- pbapply::pbapply  ## for progress bars
