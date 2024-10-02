@@ -5,21 +5,20 @@ test_that("dictionaries and equations have correct names", {
     object = {
       act <- interact()
       private <- act$.__enclos_env__$private
-      c(private$.dict, private$.group_dict)
+      unlist(private$.info$dict)
     },
-    expected = c("usfullsurveyor2015", "all")
+    expected = c(dataset = "usfullsurveyor2015", group = "all")
   )
 
   expect_equal(
     object = {
       act <- interact(list("indiana2003", "male"))
       private <- act$.__enclos_env__$private
-      c(private$.dict, private$.group_dict)
+      unlist(private$.info$dict)
     },
-    expected = c("indiana2003", "male")
+    expected = c(dataset = "indiana2003", group = "male")
   )
 })
-
 
 test_that("ceo abuse god", {
 

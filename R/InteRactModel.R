@@ -426,20 +426,18 @@ InteRactModel$set(
     group <- match.arg(group)
 
     if (equation_type == "emotionid") {
-
       key <- private$.info$impressionabo$key
       equations <- validate_emotionid_equations(c(key, group))
       private$.info$traitid <- list(key = key, group = group, equation_type = equation_type)
-
+      cli::cli_bullets(c("v" = "emotionid = list(key = \"{key}\", group = \"{group}\")"))
       private$.emotionid <- do.call(get_equation, equations)
     }
 
     if (equation_type == "traitid") {
-
       key <- private$.info$impressionabo$key
       equations <- validate_traitid_equations(c(key, group))
       private$.info$traitid <- list(key = key, group = group, equation_type = equation_type)
-
+      cli::cli_bullets(c("v" = "traitid = list(key = \"{key}\", group = \"{group}\")"))
       private$.traitid <- do.call(get_equation, equations)
     }
   })
@@ -490,8 +488,6 @@ InteRactModel$set(
 
 })
 
-
-
 ## Characteristic Emotion -------------------------------------------------
 
 InteRactModel$set(
@@ -514,30 +510,29 @@ InteRactModel$set(
     data <- dplyr::bind_cols(fundamentals, dplyr::tibble(Me = 1, Mp = 1, Ma = 1))
     M <- get_data_matrix(data, private$.emotionid)
 
-    r <- fundamentals |> unlist()
-    ## See chapter 14 of Heise (2006)
-
     if (requireNamespace("pbapply", quietly = TRUE)) {
       loop <- pbapply::pbapply  ## for progress bars
     } else {
       loop <- base::apply
     }
 
-    apply(M, )
-
-
-
-
-    X <- sweep(private$.emotionid, 1, M, `*`) |> t()      ## I am clever :)
-
+    ## pre-compute selector matrix
     S <- sapply(paste0("M", c("e", "p", "a")), function(m) {
-      as.integer(grepl(m, colnames(X)))
-    }, simplify = TRUE)                   ## selector matrix
+      as.integer(grepl(m, colnames(M)))
+    }, simplify = TRUE)
 
-    g <- matrix(1 - rowSums(S), ncol = 1) ## selector vector
+    ## pre-compute selector vector
+    g <- matrix(1 - rowSums(S), ncol = 1)
 
-    out <- solve(X %*% S, r - X %*% g)
+    out <- loop(M, MARGIN = 1, function(row) {
+      ## See chapter 14 of Heise (2006)
+      r <- row[c("Ie", "Ip", "Ia")]
+      X <- sweep(private$.emotionid, 1, row, `*`) |> t()  ## I am clever :)
+      solve(X %*% S, r - X %*% g)
 
+    }, simplify = TRUE)
+
+    rownames(out) <- colnames(S)
     return(dplyr::as_tibble(t(out)))
 
   })

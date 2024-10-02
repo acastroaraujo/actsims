@@ -3,6 +3,8 @@
 
 validate_new_dictionary <- function(dict) {
 
+  ## this gets used in the active binding dictionary field.
+
   ok <- all(c("term", "ratings") %in% colnames(dict))
   if (!ok) cli::cli_abort("New dictionary must be a data frame with `term` and `ratings` columns", call = NULL)
 
@@ -13,10 +15,12 @@ validate_new_dictionary <- function(dict) {
 
 validate_dictionary <- function(x) {
 
+  ## this gets used during initialize
+
   if (length(x) > 2) stop(call. = FALSE, "`dictionary` argument is malformed")
   if (length(x) == 1) {
     x[[2]] <- "all"
-    cli::cli_bullets(c(">" = "dictionary = list(dataset = \"{x[[1]]}\", group = \"all\")"))
+    cli::cli_bullets(c("v" = "dictionary = list(dataset = \"{x[[1]]}\", group = \"all\")"))
   }
 
   names(x) <- c("dataset", "group")
@@ -45,10 +49,12 @@ validate_dictionary <- function(x) {
 
 validate_impressionabo_equations <- function(x) {
 
+  ## this gets used during initialize
+
   if (length(x) > 2) stop(call. = FALSE, "`equations` argument is malformed")
   if (length(x) == 1) {
     x[[2]] <- "all"
-    cli::cli_bullets(c(">" = "equations = list(key = \"{x[[1]]}\", group = \"all\")"))
+    cli::cli_bullets(c("v" = "equations = list(key = \"{x[[1]]}\", group = \"all\")"))
   }
 
   names(x) <- c("key", "group")
@@ -346,6 +352,11 @@ validate_ce_events <- function(events, dict) {
     events[] <- lapply(events, as.character)
   }
 
+  ok <- all(c("I") %in% names(events)) ## this validation pattern should be added to validate_characteristic_emotion for consistency with other functions....
+  if (!ok) {
+    cli::cli_abort("`events` must have an I element", call = NULL)
+  }
+
   identities <- dict[dict$component == "identity", ][["term"]]
 
   terms <- unique(events[["I"]])
@@ -360,6 +371,16 @@ validate_ce_events <- function(events, dict) {
 
 }
 
+
+validate_modify_identity <- function(event_nms) {
+
+  ok <- all(c("M", "I") %in% event_nms)
+
+  if (!ok) {
+    cli::cli_abort("`events` must have M and I elements", call = NULL)
+  }
+
+}
 
 
 # Print Methods -----------------------------------------------------------

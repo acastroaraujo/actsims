@@ -20,9 +20,11 @@ The \verb{$fundamentals()} method does this and that..
 \code{\link[=get_fundamentals]{get_fundamentals()}}
 
 Other InteRactModel methods: 
+\code{\link{method-add-equations}},
 \code{\link{method-closest-terms}},
 \code{\link{method-deflection}},
 \code{\link{method-max-confirm}},
+\code{\link{method-modify-identity}},
 \code{\link{method-optimal-behavior}},
 \code{\link{method-reidentify}}
 }

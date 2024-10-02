@@ -29,9 +29,11 @@ d
 \code{\link[=get_transients]{get_transients()}}, \code{\link[=get_fundamentals]{get_fundamentals()}}, \code{\link[=get_element_wise_deflection]{get_element_wise_deflection()}}
 
 Other InteRactModel methods: 
+\code{\link{method-add-equations}},
 \code{\link{method-closest-terms}},
 \code{\link{method-fundamentals}},
 \code{\link{method-max-confirm}},
+\code{\link{method-modify-identity}},
 \code{\link{method-optimal-behavior}},
 \code{\link{method-reidentify}}
 }

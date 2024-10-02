@@ -97,7 +97,7 @@ get_data_matrix <- function(data, eq) {
 
 get_selection_matrix <- function(B) {
 
-  ## `B` is private$.equations
+  ## `B` is private$.impressionabo
 
   I <- diag(ncol(B))
 

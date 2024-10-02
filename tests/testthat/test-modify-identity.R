@@ -14,17 +14,15 @@ test_that("simple identity modifications work", {
     )
   )
 
-  modify_identity <- create_modifier(dictionary = c("usfullsurveyor2015", "all"), equations = list("us2010", "all"))
-
+  act <- interact(dictionary = c("usfullsurveyor2015", "all"), equations = list("us2010", "all"))
+  act$add_equation(type = "traitid", group = "all")
 
   d <- data.frame(
     M = c("tired", "absent_minded", "taciturn", "taciturn", "taciturn"),
     I = c("ceo", "academic", "buddhist", "ceo", "academic")
   )
 
-  out <- modify_identity(d)
-
-
+  out <- act$modify_identity(d)
 
   out$ratings <- lapply(out$ratings, \(x) round(x, digits = 2))
 

@@ -17,10 +17,12 @@ The \verb{$reidentify()} method does this and that..
 }
 \seealso{
 Other InteRactModel methods: 
+\code{\link{method-add-equations}},
 \code{\link{method-closest-terms}},
 \code{\link{method-deflection}},
 \code{\link{method-fundamentals}},
 \code{\link{method-max-confirm}},
+\code{\link{method-modify-identity}},
 \code{\link{method-optimal-behavior}}
 }
 \concept{InteRactModel methods}

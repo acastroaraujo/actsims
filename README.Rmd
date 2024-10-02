@@ -43,8 +43,8 @@ devtools::install_github("acastroaraujo/actsims")
 First, create an "`InteRactModel`" R6 object.
 
 ```{r example}
+suppressMessages(library(tidyverse, quietly = TRUE))
 library(actsims)
-suppressMessages(library(tidyverse))
 
 act <- interact(dictionary = "usfullsurveyor2015", equations = "us2010")
 act
@@ -198,26 +198,43 @@ act$max_confirm(d_sub[c("B", "O")], solve_for = "actor")
 
 The things here are still experimental. The API may change a lot.
 
-## Modifiers
+## Modify Identity
 
 You can create modified identities by combining them with modifier terms in the ACT dictionaries. These use the `traitid` equations in the `actdata` package.
 
-```{r}
-modify <- create_modifier(dictionary = list("usfullsurveyor2015", "all"), equations = list("us2010", "all"))
+The `$modify_identity` method does not work unless you first specify the `traitid` equation. 
 
-modify(list(M = "tired", I = "ceo"))
+```{r, error=TRUE}
+act$modify_identity(list(M = "angry", I = "doctor"))
+act$add_equation(type = "traitid", group = "all")
+act$modify_identity(list(M = "angry", I = "doctor")) 
 
-out <- modify(
-  data.frame(
-    M = c("tired", "taciturn", "taciturn"), 
-    I = c("academic", "academic", "buddhist")
-  )
+act$fundamentals("academic")
+
+grid <- data.frame(
+  M = c("tired", "taciturn", "angry", "happy"), 
+  I = c("academic", "academic", "academic", "academic")
 )
 
+out <- act$modify_identity(grid) 
 out |> tidyr::unnest_wider(ratings)
 ```
 
-_Note. The `create_modifier` function creates the `modify` function, which has built-in dictionaries and equations. This setup is still experimental._
+## Characteristic Emotion
+
+```{r}
+act$add_equation("emotionid", "male")
+act$characteristic_emotion(list(I = "brute"))
+
+grid <- act$dictionary |> 
+  dplyr::filter(component == "identity") |> 
+  dplyr::sample_n(size = 10) |> 
+  dplyr::select(I = term)
+
+grid
+
+act$characteristic_emotion(grid)
+```
 
 ## Situations
 
@@ -246,9 +263,8 @@ situation$active <- "agent2" ## one way of changing active agent
 situation$new(list(A = "employee", B = "pull_away_from", O = "employer"))
 situation$history$deflection
 
-situation$
-  activate("agent1")$ ## another way of changing active agent
-  new(list(A = "employer", B = "confront", O = "employee"))
+situation$activate("agent1") ## another way of changing active agent
+situation$new(list(A = "employer", B = "confront", O = "employee"))
 
 situation$history$deflection
 ```
@@ -268,7 +284,7 @@ situation$
 situation$history$deflection
 ```
 
-You can also use R's pipe operator using the `sttn_*` functions.
+Instead, you can use R's pipe operator in tandem with the `sttn_*` functions.
 
 ```{r}
 df <- situation |> 
@@ -309,7 +325,7 @@ occ$dictionary <- dplyr::bind_rows(defer_to, occ$dictionary)
 Note that a message appeared signaling that the replacement was successful.
 
 ```{r}
-occ
+occ 
 ```
 
 Now you just create another grid of events, calculate the deflection scores, and average over the As.
@@ -324,6 +340,7 @@ events <- tidyr::crossing(
 output <- occ$deflection(events)
 
 output |> 
+  filter(A != O) |> 
   group_by(A) |> 
   summarize(avg = mean(deflection)) |> 
   arrange(desc(avg)) 

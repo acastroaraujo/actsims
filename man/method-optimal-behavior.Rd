@@ -17,10 +17,12 @@ The \verb{$optimal_behavior()} method does this and that..
 }
 \seealso{
 Other InteRactModel methods: 
+\code{\link{method-add-equations}},
 \code{\link{method-closest-terms}},
 \code{\link{method-deflection}},
 \code{\link{method-fundamentals}},
 \code{\link{method-max-confirm}},
+\code{\link{method-modify-identity}},
 \code{\link{method-reidentify}}
 }
 \concept{InteRactModel methods}

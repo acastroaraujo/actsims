@@ -17,9 +17,11 @@ The \verb{$closest_terms()} method does this and that..
 }
 \seealso{
 Other InteRactModel methods: 
+\code{\link{method-add-equations}},
 \code{\link{method-deflection}},
 \code{\link{method-fundamentals}},
 \code{\link{method-max-confirm}},
+\code{\link{method-modify-identity}},
 \code{\link{method-optimal-behavior}},
 \code{\link{method-reidentify}}
 }
