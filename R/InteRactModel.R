@@ -21,11 +21,11 @@
 interact <- function(dictionary = list("usfullsurveyor2015", "all"), equations = list("us2010", "all")) {
 
   if (missing(dictionary)) {
-    cli::cli_bullets(c(">" = "dictionary = list(dataset = \"usfullsurveyor2015\", group = \"all\")"))
+    cli::cli_bullets(c("v" = "dictionary = list(dataset = \"usfullsurveyor2015\", group = \"all\")"))
   }
 
   if (missing(equations)) {
-    cli::cli_bullets(c(">" = "equations = list(key = \"us2010\", group = \"all\")"))
+    cli::cli_bullets(c("v" = "equations = list(key = \"us2010\", group = \"all\")"))
   }
 
   InteRactModel$new(dictionary, equations)
@@ -66,24 +66,30 @@ InteRactModel <- R6::R6Class(
       dictionary <- validate_dictionary(dictionary)
       equations <- validate_impressionabo_equations(equations)
 
-      private$.equations <- do.call(get_equation, equations)
+      private$.impressionabo <- do.call(get_equation, equations)
       private$.dictionary <- do.call(get_dictionary, dictionary)
-      private$.selection_matrix <- get_selection_matrix(private$.equations)
+      private$.selection_matrix <- get_selection_matrix(private$.impressionabo)
 
       ## for printing
-      private$.dict <- dictionary[[1]]
-      private$.group_dict <- dictionary[[2]]
-      private$.eq <- equations[[1]]
-      private$.group_eq <- equations[[2]]
+      private$.info <- list(
+        dict = dictionary,
+        impressionabo = equations
+      )
 
     },
     print = function() {
       cli::cli_h1("Interact Analysis")
-      cli::cli_alert_info("Dictionary: {private$.dict}")
-      cli::cli_bullets(c(" " = "group: {private$.group_dict}"))
-      cli::cli_alert_info("Equations: {private$.eq}")
-      cli::cli_bullets(c(" " = "group: {private$.group_eq}"))
-      cli::cli_bullets(c(" " = "type: impressionabo"))
+      cli::cli_alert_info("Dictionary: {private$.info$dict[[1]]} (group: {private$.info$dict[[2]]})")
+      cli::cli_alert_info("Equations: {private$.info$impressionabo$key}")
+      cli::cli_bullets(c(" " = "impressionabo (group: {private$.info$impressionabo$group})"))
+
+      if (!is.null(private$.traitid)) {
+        cli::cli_bullets(c(" " = "traitid (group: {private$.info$traitid$group})"))
+      }
+
+      if (!is.null(private$.emotionid)) {
+        cli::cli_bullets(c(" " = "emotionid (group: {private$.info$emotionid$group})"))
+      }
       invisible(self)
     }
   ),
@@ -96,14 +102,14 @@ InteRactModel <- R6::R6Class(
         validate_new_dictionary(value)
         cli::cli_alert_success("added new dictionary")
         private$.dictionary <- value
-        private$.group_dict <- "?"
-        private$.dict <- "External [!]"
+        private$.info$dict$dataset <- "External [!]"
+        private$.info$dict$group <- "?"
       }
     },
     equations = function(value) {
       if (missing(value)) {
-        out <- private$.equations
-        # The print looks better with the "'" to indicate predictions
+        out <- private$.impressionabo
+        # The `print` looks better with the "'" to indicate predictions
         # But the code breaks apart when we actually replace the original
         # equation column names.
         colnames(out) <- paste0(colnames(out), "'")
@@ -115,15 +121,15 @@ InteRactModel <- R6::R6Class(
   ),
 
   private = list(
-    ## for internal use
+    # for internal use
     .dictionary = NULL,
-    .equations = NULL,
+    .impressionabo = NULL,
     .selection_matrix = NULL,
-    ## for printing
-    .eq = NULL,
-    .group_eq = NULL,
-    .dict = NULL,
-    .group_dict = NULL
+    # extra `add_equations` method
+    .emotionid = NULL,
+    .traitid = NULL,
+    # for printing
+    .info = NULL
   )
 
 )
@@ -206,8 +212,8 @@ InteRactModel$set(
     validate_deflection(names(events))
 
     fundamentals <- stack_abo_ratings(events, private$.dictionary)
-    M <- get_data_matrix(fundamentals, private$.equations)
-    transients <- M %*% private$.equations
+    M <- get_data_matrix(fundamentals, private$.impressionabo)
+    transients <- M %*% private$.impressionabo
     element_wise_deflection <- (transients - fundamentals)^2
     events$deflection <- unname(rowSums(element_wise_deflection))
     events <- dplyr::as_tibble(events)
@@ -259,9 +265,9 @@ InteRactModel$set(
       transients <- reverse_ao(transients)
     }
 
-    Im <- cbind(fundamentals, get_data_matrix(transients, private$.equations))
+    Im <- cbind(fundamentals, get_data_matrix(transients, private$.impressionabo))
     S <- private$.selection_matrix[, col_select]
-    H <- get_h_matrix(private$.equations)
+    H <- get_h_matrix(private$.impressionabo)
 
     out <- solve_equations(Im, S, H)
     return(dplyr::as_tibble(out))
@@ -301,9 +307,9 @@ InteRactModel$set(
     #transients <- get_transients(x)
     #transients[col_select] <- 1 ## the transients are not being used anywhere [??]
 
-    Im <- cbind(fundamentals, get_data_matrix(fundamentals, private$.equations))
+    Im <- cbind(fundamentals, get_data_matrix(fundamentals, private$.impressionabo))
     S <- private$.selection_matrix[, col_select]
-    H <- get_h_matrix(private$.equations)
+    H <- get_h_matrix(private$.impressionabo)
 
     out <- solve_equations(Im, S, H)
     return(dplyr::as_tibble(out))
@@ -342,9 +348,9 @@ InteRactModel$set(
       "object" = epa_selector("O")
     )
 
-    Im <- cbind(fundamentals, get_data_matrix(fundamentals, private$.equations))
+    Im <- cbind(fundamentals, get_data_matrix(fundamentals, private$.impressionabo))
     S <- private$.selection_matrix[, col_select]
-    H <- get_h_matrix(private$.equations)
+    H <- get_h_matrix(private$.impressionabo)
 
     out <- solve_equations(Im, S, H)
     return(dplyr::as_tibble(out))
@@ -391,6 +397,149 @@ InteRactModel$set(
   })
 
 
+# Extra Methods -------------------------------------------------------
 
+# To add:
+# - Self Direction
+# - Settings
+
+## Add Equations ----------------------------------------------------------
+
+#' @title Add Other Transformation Equation
+#'
+#' @name method-add-equations
+#' @aliases add_equation
+#' @family InteRactModel methods
+#'
+#' @description The `$add_equations()` method does this and that..
+#'
+#' @param type one of "emotionid" or "traitid"
+#' @param group one of "all" or "female" or "male"
+#'
+#' @return adds the respective transformation equation to the InteRactModel object
+#'
+InteRactModel$set(
+  "public", "add_equation",
+  function(type = c("emotionid", "traitid"), group = c("all", "female", "male")) {
+
+    equation_type <- match.arg(type)
+    group <- match.arg(group)
+
+    if (equation_type == "emotionid") {
+
+      key <- private$.info$impressionabo$key
+      equations <- validate_emotionid_equations(c(key, group))
+      private$.info$traitid <- list(key = key, group = group, equation_type = equation_type)
+
+      private$.emotionid <- do.call(get_equation, equations)
+    }
+
+    if (equation_type == "traitid") {
+
+      key <- private$.info$impressionabo$key
+      equations <- validate_traitid_equations(c(key, group))
+      private$.info$traitid <- list(key = key, group = group, equation_type = equation_type)
+
+      private$.traitid <- do.call(get_equation, equations)
+    }
+  })
+
+
+## Modify Identity --------------------------------------------------------
+
+#' @title Modify Identity
+#'
+#' @name method-modify-identity
+#' @aliases modify_identity
+#' @family InteRactModel methods
+#'
+#' @description The `$modify_identity()` method does this and that..
+#'
+#' @param events data.frame(M = c(...), I = (...))
+#'
+#' @return a new dictionary rating for ththe modified identity
+#'
+InteRactModel$set(
+  "public", "modify_identity",
+  function(events) {
+
+    if (is.null(private$.traitid)) {
+      cli::cli_abort("must first set up `traitid` equation with the `$add_equation` method")
+    }
+
+    events <- validate_mi_events(events, private$.dictionary)
+    validate_modify_identity(names(events))
+
+    fundamentals <- stack_mi_ratings(events, private$.dictionary)
+    fundamentals <- as.data.frame(fundamentals)
+    M <- get_data_matrix(fundamentals, private$.traitid)
+    out <- M %*% private$.traitid
+
+    colnames(out) <- c("e", "p", "a")
+
+    d <- dplyr::tibble(
+      term = apply(as.data.frame(events), 1, paste, collapse = "__"),
+      component = "identity"
+    )
+
+    dplyr::bind_cols(d, out) |>
+      dplyr::rowwise() |>
+      dplyr::mutate(ratings = list(c(e = .data$e, p = .data$p, a = .data$a))) |>
+      dplyr::ungroup() |>
+      dplyr::select("term", "component", "ratings")
+
+})
+
+
+
+## Characteristic Emotion -------------------------------------------------
+
+InteRactModel$set(
+  "public", "characteristic_emotion",
+  function(events) {
+
+    if (is.null(private$.emotionid)) {
+      cli::cli_abort("must first set up `emotionid` equation with the `$add_equation` method")
+    }
+
+    events <- validate_ce_events(events, private$.dictionary)
+
+    fundamentals <- private$.dictionary |>
+      dplyr::filter(.data$term %in% events[["I"]], .data$component == "identity") |>
+      dplyr::pull("ratings")
+
+    fundamentals <- dplyr::bind_rows(fundamentals)
+    colnames(fundamentals) <- paste0("I", colnames(fundamentals))
+
+    data <- dplyr::bind_cols(fundamentals, dplyr::tibble(Me = 1, Mp = 1, Ma = 1))
+    M <- get_data_matrix(data, private$.emotionid)
+
+    r <- fundamentals |> unlist()
+    ## See chapter 14 of Heise (2006)
+
+    if (requireNamespace("pbapply", quietly = TRUE)) {
+      loop <- pbapply::pbapply  ## for progress bars
+    } else {
+      loop <- base::apply
+    }
+
+    apply(M, )
+
+
+
+
+    X <- sweep(private$.emotionid, 1, M, `*`) |> t()      ## I am clever :)
+
+    S <- sapply(paste0("M", c("e", "p", "a")), function(m) {
+      as.integer(grepl(m, colnames(X)))
+    }, simplify = TRUE)                   ## selector matrix
+
+    g <- matrix(1 - rowSums(S), ncol = 1) ## selector vector
+
+    out <- solve(X %*% S, r - X %*% g)
+
+    return(dplyr::as_tibble(t(out)))
+
+  })
 
 
