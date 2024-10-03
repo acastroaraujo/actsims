@@ -1,5 +1,5 @@
 
-#' @title Deflection Score Attributes
+#' @title Extract deflection score attributes
 #' @name deflection_attributes
 #' @export
 #'
@@ -28,6 +28,34 @@ get_transients <- function(x) {
 get_element_wise_deflection <- function(x) {
   stopifnot(inherits(x, "event_deflection"))
   attr(x, "element_wise_deflection", exact = TRUE)
+}
+
+#' @rdname deflection_attributes
+#' @export
+get_long_form <- function(x) {
+  stopifnot(inherits(x, "event_deflection"))
+
+  out <- dplyr::tibble(
+    A = rep(x[["A"]], each = 9),
+    B = rep(x[["B"]], each = 9),
+    O = rep(x[["O"]], each = 9)
+  )
+
+  out$id <- rep(rep(c("A", "B", "O"), each = 3), times = nrow(x))
+  out$dim <- rep(c("e", "p", "a"), times = 3 * nrow(x))
+  out$fundamentals <- as.vector(t(get_fundamentals(x)))
+  out$transients <- as.vector(t(get_transients(x)))
+  out$deflections <- as.vector(t(get_element_wise_deflection(x)))
+
+  out <- out |>
+    dplyr::mutate(entity = dplyr::case_when(
+      .data$id == "A" ~ .data$A,
+      .data$id == "B" ~ .data$B,
+      .data$id == "O" ~ .data$O
+    ))
+
+  return(out)
+
 }
 
 

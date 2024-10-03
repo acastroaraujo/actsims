@@ -1,0 +1,90 @@
+---
+title: "Situations"
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(actsims)
+```
+
+## Introduction
+
+These functions power the "Analyze Events" pane in [`interactShiny`](https://acastroaraujo.shinyapps.io/interactShiny/). 
+
+The idea is that each agent in a two-person interaction is an independent `InteRactModel`.
+
+```{r}
+situation <- define_situation(
+  agent1 = interact(), ## the idea is that each agent can be set up with
+  agent2 = interact()  ## different dictionaries and equations.
+)
+```
+
+The newly created `situation` object contains various fields and functions. 
+
+Most of these will be empty until the `$start()` function is used. 
+
+For example:
+
+```{r}
+situation$active  ## one of the two agents will be active at any given time
+situation$time
+situation$history
+```
+
+And here is how they look after `$start()`:
+
+```{r}
+situation$start(list(A = "boyfriend", B = "hurt", O = "firefighter"))
+opt_beh <- situation$optimal_behavior(who = "agent2")
+opt_beh
+situation$agent2$closest_terms(opt_beh, component = "behavior")[1:5]
+
+situation$activate("agent2")
+situation$new(list(A = "firefighter", B = "babble_to", O = "boyfriend"))
+
+situation$history
+```
+
+This `situation` allows for "method chaining" using the `$` operator. This type of code is not very R-like.
+
+```{r}
+situation$
+  activate("agent1")$
+  start(list(A = "employer", B = "hurt", O = "employee"))$ 
+  activate("agent2")$
+  new(list(A = "employee", B = "pull_away_from", O = "employer"))$
+  activate("agent1")$
+  new(list(A = "employer", B = "confront", O = "employee"))$
+  history
+  
+situation$history$deflection
+```
+
+Instead, you can use R’s pipe operator in tandem with the `sttn_*` functions.
+
+```{r}
+df <- situation |> 
+  sttn_activate("agent1") |> 
+  sttn_start(list(A = "employer", B = "hurt", O = "employee")) |> 
+  sttn_activate("agent2") |> 
+  sttn_new(list(A = "employee", B = "pull_away_from", O = "employer")) |> 
+  sttn_activate("agent1") |> 
+  sttn_new(list(A = "employer", B = "confront", O = "employee")) |> 
+  sttn_extract()
+  
+df$deflection
+df$transients
+```
+
+
+
+

@@ -3,9 +3,12 @@
 \name{method-reidentify}
 \alias{method-reidentify}
 \alias{reidentify}
-\title{Reidentification of Actor or Object, following an event}
+\title{Reidentification of actor or object, following an event}
+\usage{
+reidentify(x, who = c("actor", "object"))
+}
 \arguments{
-\item{x}{an "Event deflection" object created by the \verb{$deflection()} method}
+\item{x}{an "event deflection" object created by the \verb{$deflection()} method}
 
 \item{who}{(character) either "actor" or "object"}
 }
@@ -17,7 +20,8 @@ The \verb{$reidentify()} method does this and that..
 }
 \seealso{
 Other InteRactModel methods: 
-\code{\link{method-add-equations}},
+\code{\link{method-add-equation}},
+\code{\link{method-characteristic-emotion}},
 \code{\link{method-closest-terms}},
 \code{\link{method-deflection}},
 \code{\link{method-fundamentals}},

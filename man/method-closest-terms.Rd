@@ -3,9 +3,20 @@
 \name{method-closest-terms}
 \alias{method-closest-terms}
 \alias{closest_terms}
-\title{Get Closest Terms to an EPA profile}
+\title{Get closest terms to an EPA profile}
+\usage{
+closest_terms(
+  epa,
+  component = c("identity", "behavior", "modifier"),
+  max_dist = 1
+)
+}
 \arguments{
-\item{epa}{a vector or list of epa ratings
+\item{epa}{a vector or list of epa ratings}
+
+\item{component}{a vector or list of epa ratings}
+
+\item{max_dist}{a positive real number
 
 It also works with one row data frame with \code{e}, \code{p}, and \code{a} columns}
 }
@@ -17,7 +28,8 @@ The \verb{$closest_terms()} method does this and that..
 }
 \seealso{
 Other InteRactModel methods: 
-\code{\link{method-add-equations}},
+\code{\link{method-add-equation}},
+\code{\link{method-characteristic-emotion}},
 \code{\link{method-deflection}},
 \code{\link{method-fundamentals}},
 \code{\link{method-max-confirm}},

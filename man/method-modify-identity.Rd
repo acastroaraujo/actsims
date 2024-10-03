@@ -3,19 +3,24 @@
 \name{method-modify-identity}
 \alias{method-modify-identity}
 \alias{modify_identity}
-\title{Modify Identity}
+\title{Create EPA profile for modified identities}
+\usage{
+modify_identity(events)
+}
 \arguments{
-\item{events}{data.frame(M = c(...), I = (...))}
+\item{events}{A data frame with \code{M} (modifier) and \code{I} (identity) columns}
 }
 \value{
-a new dictionary rating for ththe modified identity
+A new dictionary rating for the modified identities
 }
 \description{
-The \verb{$modify_identity()} method does this and that..
+The \verb{$modify_identity()} applies the modifier equations (\code{traitid})
+to find the EPA profile of a modified identity.
 }
 \seealso{
 Other InteRactModel methods: 
-\code{\link{method-add-equations}},
+\code{\link{method-add-equation}},
+\code{\link{method-characteristic-emotion}},
 \code{\link{method-closest-terms}},
 \code{\link{method-deflection}},
 \code{\link{method-fundamentals}},

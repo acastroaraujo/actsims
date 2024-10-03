@@ -1,5 +1,5 @@
 
-#' @title Create a new InteRactModel object
+#' @title Create a new `InteRactModel` object
 #'
 #' @description
 #' Create a new [`InteRactModel`] object by specifying dictionary and
@@ -33,28 +33,25 @@ interact <- function(dictionary = list("usfullsurveyor2015", "all"), equations =
 
 # InteRactModel ----------------------------------------------------------------
 
-#' @title InteRactModel Objects
+#' @title InteRactModel objects
 #'
 #' @name InteRactModel
 #' @description An `InteRactModel` object is an [R6][R6::R6Class] object created
 #'   by the [interact()] function.
 #'
-#'   The object stores (1) a dictionary of EPA ratings
-#'   or "fundamentals" and (2) ACT equations used to calculate "transient impressions."
+#'   The object stores (1) a `$dictionary` of EPA ratings and (2) a set of `$equations` used to calculate "transient impressions."
 #'
-#'   It also provides methods for calculating deflection scores, behaviors, reidentification,
-#'   among others.
 #'
-#' @section Methods: `InteRactModel` objects have the following associated
-#'   methods, many of which have their own (linked) documentation pages:
+#' @section Methods:
+#'  `InteRactModel` objects have the following associated methods, many of which have their own documentation pages:
 #'
-#'  |**Method**|**Description**|
-#'  |:----------|:---------------|
-#'  [`$deflection()`][method-deflection] | Return an "Event Deflection" data frame. |
-#'  [`$optimal_behavior()`][method-optimal-behavior] | Calculate optimal behavior following an event |
-#'  [`$reidentify()`][method-reidentify] | Reidentify either actor or object following an event |
-#'  [`$max_confirm()`][method-max-confirm]|  Solve for... from a pairing of "actor," "object," or "behavior"  |
-#'  [`$closest_terms()`][method-closest-terms] |  Return closest terms in `$dictionary` to an EPA profile |
+#'  - [`$deflection()`][method-deflection]
+#'  - [`$optimal_behavior()`][method-optimal-behavior]
+#'  - [`$reidentify()`][method-reidentify]
+#'  - [`$max_confirm()`][method-max-confirm]
+#'  - [`$closest_terms()`][method-closest-terms]
+#'  - [`$modify_identity()`][method-modify-identity]
+#'  - [`$characteristic_emotion()`][method-characteristic-emotion]
 #'
 #'
 InteRactModel <- R6::R6Class(
@@ -135,7 +132,7 @@ InteRactModel <- R6::R6Class(
 )
 
 
-#' @title Lookup fundamentals in dictionary
+#' @title Lookup EPA ratings of terms in a `$dictionary`
 #'
 #' @name method-fundamentals
 #' @aliases fundamentals
@@ -176,16 +173,13 @@ fundamentals <- function(x) {
 }
 InteRactModel$set("public", "fundamentals", fundamentals)
 
-
-## Event Deflection --------------------------------------------------------
-
-#' @title Calculate Event Deflection Scores
+#' @title Calculate ABO event deflection scores
 #'
 #' @name method-deflection
 #' @aliases deflection
 #' @family InteRactModel methods
 #'
-#' @description The `$deflection()` method does this and that..
+#' @description The `$deflection()` method calculates the deflection of an ABO event.
 #'
 #' @param events a data frame with A, B, and O
 #'
@@ -198,15 +192,7 @@ InteRactModel$set("public", "fundamentals", fundamentals)
 #'
 #' @seealso [get_transients()], [get_fundamentals()], [get_element_wise_deflection()]
 #'
-#' @examples
-#' \dontrun{
-#' act <- interact(dictionary = "usfullsurveyor2015", equation = "us2010")
-#' d <- act$deflection(events = data.frame(A = "mother", B = "abandon", O = "baby"))
-#' d
-#'}
-InteRactModel$set(
-  "public", "deflection",
-  function(events) {
+deflection <- function(events) {
 
     events <- validate_events(events, private$.dictionary)
     validate_deflection(names(events))
@@ -226,11 +212,9 @@ InteRactModel$set(
       transients = dplyr::as_tibble(transients),
       fundamentals = dplyr::as_tibble(fundamentals)
     )
+}
+InteRactModel$set("public", "deflection", value = deflection)
 
-})
-
-
-## Behaviors ---------------------------------------------------------------
 
 #' @title Calculate the Optimal Behavior for the Actor or Object following an Event
 #'
@@ -246,9 +230,7 @@ InteRactModel$set(
 #'
 #' @return a data frame of EPA profiles for the optimal behavior
 #'
-InteRactModel$set(
-  "public", "optimal_behavior",
-  function(x, who = c("actor", "object")) {
+optimal_behavior <- function(x, who = c("actor", "object")) {
 
     who <- match.arg(who)
     if (!inherits(x, "event_deflection")) stop(call. = FALSE, "`x` must be a data frame created by the $deflection() method")
@@ -271,12 +253,11 @@ InteRactModel$set(
 
     out <- solve_equations(Im, S, H)
     return(dplyr::as_tibble(out))
+}
+InteRactModel$set("public", "optimal_behavior", value = optimal_behavior)
 
-  })
 
-## Reidentification --------------------------------------------------------
-
-#' @title Reidentification of Actor or Object, following an event
+#' @title Reidentification of actor or object, following an event
 #'
 #' @name method-reidentify
 #' @aliases reidentify
@@ -284,15 +265,13 @@ InteRactModel$set(
 #'
 #' @description The `$reidentify()` method does this and that..
 #'
-#' @param x an "Event deflection" object created by the `$deflection()` method
+#' @param x an "event deflection" object created by the `$deflection()` method
 #'
 #' @param who (character) either "actor" or "object"
 #'
 #' @return a data frame of EPA profiles for the optimal reidentification
 #'
-InteRactModel$set(
-  "public", "reidentify",
-  function(x, who = c("actor", "object")) {
+reidentify <- function(x, who = c("actor", "object")) {
 
     who <- match.arg(who)
     if (!inherits(x, "event_deflection")) stop(call. = FALSE, "`x` must be a data frame created by the $deflection() method")
@@ -304,8 +283,6 @@ InteRactModel$set(
 
     fundamentals <- get_fundamentals(x)
     fundamentals[col_select] <- 1
-    #transients <- get_transients(x)
-    #transients[col_select] <- 1 ## the transients are not being used anywhere [??]
 
     Im <- cbind(fundamentals, get_data_matrix(fundamentals, private$.impressionabo))
     S <- private$.selection_matrix[, col_select]
@@ -313,11 +290,9 @@ InteRactModel$set(
 
     out <- solve_equations(Im, S, H)
     return(dplyr::as_tibble(out))
+}
+InteRactModel$set("public", "reidentify", value = reidentify)
 
-  })
-
-
-## Max Confirm -------------------------------------------------------------
 
 #' @title Identify the behavior that would maximally confirm the identities of actor
 #' in an actor-object pairing
@@ -326,41 +301,56 @@ InteRactModel$set(
 #' @aliases max_confirm
 #' @family InteRactModel methods
 #'
-#' @description The `$max_confirm()` method does this and that..
+#' @description The `$max_confirm(..., solve_for = "behavior")` method identify the behavior that would maximally confirm the identities of actor
+#' in an actor-object pairing.
 #'
-#' @param events a data frame with only only a pair of A, B, or O.
+#' does this and that..
 #'
-#' @return a data frame with the maximally confirming EPA profiles
+#' @param events A data frame with only only a pair of A, B, or O.
+#' @param solve_for "behavior", "actor", or "object"
 #'
-InteRactModel$set(
-  "public", "max_confirm",
-  function(events, solve_for = c("behavior", "actor", "object")) {
+#' @return A data frame with the maximally confirming EPA profiles
+#'
+#' @examples
+#' \dontrun{
+#' act$max_confirm(
+#'   events = tibble(A = "god", O = "deadbeat"),
+#'   solve_for = "behavior"
+#' )
+#'
+#' act$max_confirm(
+#'   events = list(A = "god", B = "kill"),
+#'   solve_for = "object"
+#' )
+#'
+#' act$max_confirm(
+#'   events = data.frame(B = "kill", O = "deadbeat"),
+#'   solve_for = "actor"
+#' )
+#' }
+#'
+max_confirm <- function(events, solve_for = c("behavior", "actor", "object")) {
 
-    solve_for <- match.arg(solve_for)
-    events <- validate_events(events, private$.dictionary)
-    validate_max_confirm(names(events), solve_for)
+  solve_for <- match.arg(solve_for)
+  events <- validate_events(events, private$.dictionary)
+  validate_max_confirm(names(events), solve_for)
+  fundamentals <- stack_pair_ratings(events, solve_for, private$.dictionary)
+  col_select <- switch(solve_for,
+    "actor" = epa_selector("A"),
+    "behavior" = epa_selector("B"),
+    "object" = epa_selector("O")
+  )
 
-    fundamentals <- stack_pair_ratings(events, solve_for, private$.dictionary)
+  Im <- cbind(fundamentals, get_data_matrix(fundamentals, private$.impressionabo))
+  S <- private$.selection_matrix[, col_select]
+  H <- get_h_matrix(private$.impressionabo)
 
-    col_select <- switch(solve_for,
-      "actor" = epa_selector("A"),
-      "behavior" = epa_selector("B"),
-      "object" = epa_selector("O")
-    )
+  out <- solve_equations(Im, S, H)
+  return(dplyr::as_tibble(out))
+}
+InteRactModel$set("public", "max_confirm", value = max_confirm)
 
-    Im <- cbind(fundamentals, get_data_matrix(fundamentals, private$.impressionabo))
-    S <- private$.selection_matrix[, col_select]
-    H <- get_h_matrix(private$.impressionabo)
-
-    out <- solve_equations(Im, S, H)
-    return(dplyr::as_tibble(out))
-
-  }
-)
-
-## Closest Term ------------------------------------------------------------
-
-#' @title Get Closest Terms to an EPA profile
+#' @title Get closest terms to an EPA profile
 #'
 #' @name method-closest-terms
 #' @aliases closest_terms
@@ -369,33 +359,31 @@ InteRactModel$set(
 #' @description The `$closest_terms()` method does this and that..
 #'
 #' @param epa a vector or list of epa ratings
+#' @param component a vector or list of epa ratings
+#' @param max_dist a positive real number
 #'
 #' It also works with one row data frame with `e`, `p`, and `a` columns
 #'
 #' @return a list of closest terms found in `$dictionary`, sorted by closeness.
 #'
-InteRactModel$set(
-  "public", "closest_terms",
-  function(epa, component = c("identity", "behavior", "modifier"), max_dist = 1) {
+closest_terms <- function(epa, component = c("identity", "behavior", "modifier"), max_dist = 1) {
+  epa <- validate_epa(epa)
+  x <- match.arg(component)
 
-    epa <- validate_epa(epa)
-    x <- match.arg(component)
+  lookup <- private$.dictionary[private$.dictionary$component == x, ]
+  fundamentals <- do.call(rbind, lookup$ratings)
+  rownames(fundamentals) <- lookup$term
 
-    lookup <- private$.dictionary[private$.dictionary$component == x, ]
-    fundamentals <- do.call(rbind, lookup$ratings)
-    rownames(fundamentals) <- lookup$term
+  out <- apply(epa, MARGIN = 1, function(row) {
+    ssd <- rowSums(sweep(fundamentals, MARGIN = 2, FUN = "-", unlist(row))^2)
+    i <- which(ssd <= max_dist)
+    sort(ssd[i])
+  }, simplify = FALSE)
 
-    out <- apply(epa, MARGIN = 1, function(row) {
-      ssd <- rowSums(sweep(fundamentals, MARGIN = 2, FUN = "-", unlist(row))^2)
-      i <- which(ssd <= max_dist)
-      sort(ssd[i])
-    }, simplify = FALSE)
-
-    if (length(out) == 1L) out <- unlist(out)
-    return(out)
-
-  })
-
+  if (length(out) == 1L) out <- unlist(out)
+  return(out)
+}
+InteRactModel$set("public", "closest_terms", value = closest_terms)
 
 # Extra Methods -------------------------------------------------------
 
@@ -403,24 +391,22 @@ InteRactModel$set(
 # - Self Direction
 # - Settings
 
-## Add Equations ----------------------------------------------------------
-
-#' @title Add Other Transformation Equation
+#' @title Set up additional transformation equations
 #'
-#' @name method-add-equations
+#' @name method-add-equation
 #' @aliases add_equation
 #' @family InteRactModel methods
 #'
-#' @description The `$add_equations()` method does this and that..
+#' @description The `$add_equation()` method allows for the inclusion of further equations.
 #'
-#' @param type one of "emotionid" or "traitid"
-#' @param group one of "all" or "female" or "male"
+#' Adding `"emotionid"` is needed to use the `$characteristic_emotion()` method.
 #'
-#' @return adds the respective transformation equation to the InteRactModel object
+#' Adding `"traitid"` is needed to use the `$modify_identity()` method.
 #'
-InteRactModel$set(
-  "public", "add_equation",
-  function(type = c("emotionid", "traitid"), group = c("all", "female", "male")) {
+#' @param type one of `"emotionid"` or `"traitid"`
+#' @param group one of `"all"`, `"female"`, or `"male"`
+#'
+add_equation <- function(type = c("emotionid", "traitid"), group = c("all", "female", "male")) {
 
     equation_type <- match.arg(type)
     group <- match.arg(group)
@@ -440,26 +426,24 @@ InteRactModel$set(
       cli::cli_bullets(c("v" = "traitid = list(key = \"{key}\", group = \"{group}\")"))
       private$.traitid <- do.call(get_equation, equations)
     }
-  })
+}
+InteRactModel$set("public", "add_equation", value = add_equation)
 
 
-## Modify Identity --------------------------------------------------------
-
-#' @title Modify Identity
+#' @title Create EPA profile for modified identities
 #'
 #' @name method-modify-identity
 #' @aliases modify_identity
 #' @family InteRactModel methods
 #'
-#' @description The `$modify_identity()` method does this and that..
+#' @description The `$modify_identity()` applies the modifier equations (`traitid`)
+#' to find the EPA profile of a modified identity.
 #'
-#' @param events data.frame(M = c(...), I = (...))
+#' @param events A data frame with `M` (modifier) and `I` (identity) columns
 #'
-#' @return a new dictionary rating for ththe modified identity
+#' @return A new dictionary rating for the modified identities
 #'
-InteRactModel$set(
-  "public", "modify_identity",
-  function(events) {
+modify_identity <- function(events) {
 
     if (is.null(private$.traitid)) {
       cli::cli_abort("must first set up `traitid` equation with the `$add_equation` method")
@@ -485,14 +469,19 @@ InteRactModel$set(
       dplyr::mutate(ratings = list(c(e = .data$e, p = .data$p, a = .data$a))) |>
       dplyr::ungroup() |>
       dplyr::select("term", "component", "ratings")
+}
+InteRactModel$set("public", "modify_identity", modify_identity)
 
-})
 
-## Characteristic Emotion -------------------------------------------------
-
-InteRactModel$set(
-  "public", "characteristic_emotion",
-  function(events) {
+#' @title Estimate EPA profile of a characteristic emotion
+#'
+#' @name method-characteristic-emotion
+#' @aliases characteristic_emotion
+#' @family InteRactModel methods
+#'
+#' @param events A data frame with an `I` column (for "identity")
+#'
+characteristic_emotion <- function(events) {
 
     if (is.null(private$.emotionid)) {
       cli::cli_abort("must first set up `emotionid` equation with the `$add_equation` method")
@@ -535,6 +524,7 @@ InteRactModel$set(
     rownames(out) <- colnames(S)
     return(dplyr::as_tibble(t(out)))
 
-  })
+}
+InteRactModel$set("public", name = "characteristic_emotion", value = characteristic_emotion)
 
 

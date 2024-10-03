@@ -6,3 +6,7 @@
 ^Untitled.R$
 ^Untitled.txt$
 ^\.github$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
+^vignettes/articles$

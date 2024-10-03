@@ -5,13 +5,16 @@
 \alias{get_fundamentals}
 \alias{get_transients}
 \alias{get_element_wise_deflection}
-\title{Deflection Score Attributes}
+\alias{get_long_form}
+\title{Extract deflection score attributes}
 \usage{
 get_fundamentals(x)
 
 get_transients(x)
 
 get_element_wise_deflection(x)
+
+get_long_form(x)
 }
 \arguments{
 \item{x}{an "\code{event_deflection}" object created by the \code{\link[=method-deflection]{$deflection()}} method}

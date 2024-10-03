@@ -2,26 +2,24 @@
 % Please edit documentation in R/InteRactModel.R
 \name{InteRactModel}
 \alias{InteRactModel}
-\title{InteRactModel Objects}
+\title{InteRactModel objects}
 \description{
 An \code{InteRactModel} object is an \link[R6:R6Class]{R6} object created
 by the \code{\link[=interact]{interact()}} function.
 
-The object stores (1) a dictionary of EPA ratings
-or "fundamentals" and (2) ACT equations used to calculate "transient impressions."
-
-It also provides methods for calculating deflection scores, behaviors, reidentification,
-among others.
+The object stores (1) a \verb{$dictionary} of EPA ratings and (2) a set of \verb{$equations} used to calculate "transient impressions."
 }
 \section{Methods}{
- \code{InteRactModel} objects have the following associated
-methods, many of which have their own (linked) documentation pages:\tabular{ll}{
-   \strong{Method} \tab \strong{Description} \cr
-   \code{\link[=method-deflection]{$deflection()}} \tab Return an "Event Deflection" data frame. \cr
-   \code{\link[=method-optimal-behavior]{$optimal_behavior()}} \tab Calculate optimal behavior following an event \cr
-   \code{\link[=method-reidentify]{$reidentify()}} \tab Reidentify either actor or object following an event \cr
-   \code{\link[=method-max-confirm]{$max_confirm()}} \tab Solve for... from a pairing of "actor," "object," or "behavior" \cr
-   \code{\link[=method-closest-terms]{$closest_terms()}} \tab Return closest terms in \verb{$dictionary} to an EPA profile \cr
+
+\code{InteRactModel} objects have the following associated methods, many of which have their own documentation pages:
+\itemize{
+\item \code{\link[=method-deflection]{$deflection()}}
+\item \code{\link[=method-optimal-behavior]{$optimal_behavior()}}
+\item \code{\link[=method-reidentify]{$reidentify()}}
+\item \code{\link[=method-max-confirm]{$max_confirm()}}
+\item \code{\link[=method-closest-terms]{$closest_terms()}}
+\item \code{\link[=method-modify-identity]{$modify_identity()}}
+\item \code{\link[=method-characteristic-emotion]{$characteristic_emotion()}}
 }
 }
 

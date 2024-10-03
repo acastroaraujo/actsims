@@ -3,7 +3,7 @@
 \name{method-fundamentals}
 \alias{method-fundamentals}
 \alias{fundamentals}
-\title{Lookup fundamentals in dictionary}
+\title{Lookup EPA ratings of terms in a \verb{$dictionary}}
 \usage{
 fundamentals(x)
 }
@@ -20,7 +20,8 @@ The \verb{$fundamentals()} method does this and that..
 \code{\link[=get_fundamentals]{get_fundamentals()}}
 
 Other InteRactModel methods: 
-\code{\link{method-add-equations}},
+\code{\link{method-add-equation}},
+\code{\link{method-characteristic-emotion}},
 \code{\link{method-closest-terms}},
 \code{\link{method-deflection}},
 \code{\link{method-max-confirm}},

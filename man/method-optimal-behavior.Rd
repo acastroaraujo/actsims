@@ -4,6 +4,9 @@
 \alias{method-optimal-behavior}
 \alias{optimal_behavior}
 \title{Calculate the Optimal Behavior for the Actor or Object following an Event}
+\usage{
+optimal_behavior(x, who = c("actor", "object"))
+}
 \arguments{
 \item{x}{an "Event deflection" object created by the \verb{$deflection()} method}
 
@@ -17,7 +20,8 @@ The \verb{$optimal_behavior()} method does this and that..
 }
 \seealso{
 Other InteRactModel methods: 
-\code{\link{method-add-equations}},
+\code{\link{method-add-equation}},
+\code{\link{method-characteristic-emotion}},
 \code{\link{method-closest-terms}},
 \code{\link{method-deflection}},
 \code{\link{method-fundamentals}},

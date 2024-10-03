@@ -1,0 +1,65 @@
+---
+title: "Element Wise Deflection"
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup, message=FALSE}
+library(actsims)
+library(tidyverse)
+theme_set(theme_light(base_family = "Avenir"))
+```
+
+You can `get_element_wise_deflection()` from an "event deflection object".
+
+```{r}
+act <- interact(
+  dictionary = c("usfullsurveyor2015", "all"), 
+  equations = c("us2010", "all")
+)
+
+events <- bind_rows(
+  c(A = "boyfriend", B = "brutalize", O = "robber"),
+  c(A = "boyfriend", B = "brutalize", O = "girlfriend")
+) 
+
+d <- act$deflection(events)
+get_element_wise_deflection(d)
+```
+
+Each piece of deflection is just the squared difference between "fundamentals" and "transients." Thus, we can imagine various ways of visualizing what is going on.
+
+The `get_long_form()` functions is useful for making graphs like the following one:
+
+```{r}
+
+df <- get_long_form(d)
+df
+
+df |> 
+  mutate(entity = fct_rev(entity)) |> 
+  mutate(event = paste(A, B, O, sep = "-")) |>
+  mutate(dim = case_when(
+    dim == "e" ~ "Evaluation",
+    dim == "p" ~ "Potency",
+    dim == "a" ~ "Activity"
+  )) |> 
+  mutate(dim = fct_relevel(dim, c("Evaluation", "Potency", "Activity"))) |> 
+  ggplot(aes(x = fundamentals, xend = transients, y = entity, color = dim)) + 
+  geom_vline(xintercept = 0, linetype = "dashed", linewidth = 1/4) +
+  geom_point(size = 1/2, show.legend = FALSE, position = position_dodge(1/4)) + 
+  geom_segment(arrow = arrow(length = unit(0.15, "cm")), 
+               position = position_dodge(1/4)) + 
+  facet_wrap(~ event, scales = "free_y", ncol = 2) + 
+  labs(title = "Element Wise Deflection", color = NULL, x = "\nratings", y = NULL) +
+  theme(legend.position = "bottom", strip.background.y = element_blank()) 
+
+```
+

@@ -2,7 +2,7 @@
 % Please edit documentation in R/InteRactModel.R
 \name{interact}
 \alias{interact}
-\title{Create a new InteRactModel object}
+\title{Create a new \code{InteRactModel} object}
 \usage{
 interact(
   dictionary = list("usfullsurveyor2015", "all"),

@@ -12,6 +12,7 @@ inteRact, but using R6.
 Useful links:
 \itemize{
   \item \url{https://github.com/acastroaraujo/actsims}
+  \item \url{https://acastroaraujo.github.io/actsims/}
   \item Report bugs at \url{https://github.com/acastroaraujo/actsims/issues}
 }
 

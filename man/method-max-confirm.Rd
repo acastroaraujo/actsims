@@ -5,18 +5,46 @@
 \alias{max_confirm}
 \title{Identify the behavior that would maximally confirm the identities of actor
 in an actor-object pairing}
+\usage{
+max_confirm(events, solve_for = c("behavior", "actor", "object"))
+}
 \arguments{
-\item{events}{a data frame with only only a pair of A, B, or O.}
+\item{events}{A data frame with only only a pair of A, B, or O.}
+
+\item{solve_for}{"behavior", "actor", or "object"}
 }
 \value{
-a data frame with the maximally confirming EPA profiles
+A data frame with the maximally confirming EPA profiles
 }
 \description{
-The \verb{$max_confirm()} method does this and that..
+The \verb{$max_confirm(..., solve_for = "behavior")} method identify the behavior that would maximally confirm the identities of actor
+in an actor-object pairing.
+
+does this and that..
+}
+\examples{
+\dontrun{
+act$max_confirm(
+  events = tibble(A = "god", O = "deadbeat"),
+  solve_for = "behavior"
+)
+
+act$max_confirm(
+  events = list(A = "god", B = "kill"),
+  solve_for = "object"
+)
+
+act$max_confirm(
+  events = data.frame(B = "kill", O = "deadbeat"),
+  solve_for = "actor"
+)
+}
+
 }
 \seealso{
 Other InteRactModel methods: 
-\code{\link{method-add-equations}},
+\code{\link{method-add-equation}},
+\code{\link{method-characteristic-emotion}},
 \code{\link{method-closest-terms}},
 \code{\link{method-deflection}},
 \code{\link{method-fundamentals}},

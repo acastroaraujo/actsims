@@ -1,0 +1,61 @@
+---
+title: "Bulk Processing"
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup, message=FALSE}
+library(actsims)
+library(tidyverse)
+act <- interact()
+```
+
+You can use a grid of events to estimate multiple deflection scores simultaneously.
+
+```{r}
+act
+```
+
+For example, the following `events` object contains 4 million ABO events randomly created from the `usfullsurveyor2015` dictionary. 
+
+```{r}
+events <- tidyr::crossing(
+  A = dplyr::filter(act$dictionary, component == "identity")[["term"]] |> sample(200),
+  B = dplyr::filter(act$dictionary, component == "behavior")[["term"]] |> sample(100),
+  O = dplyr::filter(act$dictionary, component == "identity")[["term"]] |> sample(200)
+) 
+
+glimpse(events)
+```
+Every method is designed to work in bulk. However, only the `$deflection()` method will work very fast with millions of observations.
+
+```{r}
+d <- act$deflection(events)
+d
+get_fundamentals(d)
+get_transients(d)
+get_element_wise_deflection(d)
+```
+
+Other methods might require a few minutes, so let's take a sample of 10,000 events instead...
+
+```{r}
+d_sub <- dplyr::slice_sample(d, n = 10000) # sample 10000 event deflections
+d_sub
+act$reidentify(d_sub, who = "actor")
+act$optimal_behavior(d_sub, who = "actor")
+act$reidentify(d_sub, who = "object")
+act$optimal_behavior(d_sub, who = "object")
+
+act$max_confirm(d_sub[c("A", "O")], solve_for = "behavior")
+act$max_confirm(d_sub[c("A", "B")], solve_for = "object")
+act$max_confirm(d_sub[c("B", "O")], solve_for = "actor")
+```
+
