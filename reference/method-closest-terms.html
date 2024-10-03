@@ -86,6 +86,57 @@
 <code><a href="method-reidentify.html">method-reidentify</a></code></p></div>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">act</span> <span class="op">&lt;-</span> <span class="fu"><a href="interact.html">interact</a></span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> dictionary = list(dataset = "usfullsurveyor2015", group = "all")</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> equations = list(key = "us2010", group = "all")</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">act</span><span class="op">$</span><span class="fu">closest_terms</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>e <span class="op">=</span> <span class="fl">2</span>, p <span class="op">=</span> <span class="fl">1</span>, a <span class="op">=</span> <span class="fl">0</span><span class="op">)</span>, component <span class="op">=</span> <span class="st">"identity"</span>, max_dist <span class="op">=</span> <span class="fl">0.2</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>             lady graduate_student    forest_ranger      wage_earner </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           0.0145           0.0227           0.0501           0.0826 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            baker    social_worker       non_smoker     nutritionist </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           0.0945           0.0973           0.1034           0.1556 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           artist </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           0.1829 </span>
+<span class="r-in"><span><span class="va">act</span><span class="op">$</span><span class="fu">closest_terms</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>e <span class="op">=</span> <span class="fl">2</span>, p <span class="op">=</span> <span class="fl">1</span>, a <span class="op">=</span> <span class="fl">0</span><span class="op">)</span>, component <span class="op">=</span> <span class="st">"behavior"</span>, max_dist <span class="op">=</span> <span class="fl">0.2</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     turn_to     consult         ask  agree_with   ask_about      answer </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      0.0566      0.0801      0.0923      0.1022      0.1649      0.1808 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   dine_with concur_with </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      0.1934      0.1978 </span>
+<span class="r-in"><span><span class="va">act</span><span class="op">$</span><span class="fu">closest_terms</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>e <span class="op">=</span> <span class="fl">2</span>, p <span class="op">=</span> <span class="fl">1</span>, a <span class="op">=</span> <span class="fl">0</span><span class="op">)</span>, component <span class="op">=</span> <span class="st">"modifier"</span>, max_dist <span class="op">=</span> <span class="fl">0.2</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> light_hearted          cute       dutiful      carefree       gourmet </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        0.0474        0.1396        0.1709        0.1982        0.1997 </span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co">## Using `$closest_terms()` on event deflection data frames</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">d</span> <span class="op">&lt;-</span> <span class="va">act</span><span class="op">$</span><span class="fu">deflection</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>A <span class="op">=</span> <span class="st">"ceo"</span>, B <span class="op">=</span> <span class="st">"kick"</span>, O <span class="op">=</span> <span class="st">"ceo"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">d</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #0000BB;"># Event deflection</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #0000BB;"># A data frame: 1 × 4</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   A     B     O     deflection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">*</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> ceo   kick  ceo         30.2</span>
+<span class="r-in"><span><span class="va">opt_reidentify</span> <span class="op">&lt;-</span> <span class="va">act</span><span class="op">$</span><span class="fu">reidentify</span><span class="op">(</span><span class="va">d</span>, who <span class="op">=</span> <span class="st">"object"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">opt_reidentify</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 1 × 3</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       Oe    Op    Oa</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> -<span style="color: #BB0000;">0.507</span> -<span style="color: #BB0000;">2.63</span> -<span style="color: #BB0000;">1.91</span></span>
+<span class="r-in"><span><span class="va">act</span><span class="op">$</span><span class="fu">closest_terms</span><span class="op">(</span><span class="va">opt_reidentify</span>, max_dist <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          nobody          victim        weakling         shut_in         cripple </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       0.1665388       0.4721416       0.6651541       0.7311867       0.7626249 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> homeless_person           dummy </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       0.8316222       0.8925427 </span>
+<span class="r-in"><span><span class="va">opt_behavior</span> <span class="op">&lt;-</span> <span class="va">act</span><span class="op">$</span><span class="fu">optimal_behavior</span><span class="op">(</span><span class="va">d</span>, who <span class="op">=</span> <span class="st">"object"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">act</span><span class="op">$</span><span class="fu">closest_terms</span><span class="op">(</span><span class="va">opt_behavior</span>, max_dist <span class="op">=</span> <span class="fl">0.5</span>, component <span class="op">=</span> <span class="st">"behavior"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      defeat   apprehend debate_with    confront   challenge        urge </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   0.1659501   0.3250959   0.3304993   0.3353730   0.4298606   0.4782635 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  sleep_with </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   0.4949517 </span>
+<span class="r-in"><span></span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

@@ -76,6 +76,43 @@ to find the EPA profile of a modified identity.</p>
 <code><a href="method-reidentify.html">method-reidentify</a></code></p></div>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">act</span> <span class="op">&lt;-</span> <span class="fu"><a href="interact.html">interact</a></span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> dictionary = list(dataset = "usfullsurveyor2015", group = "all")</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> equations = list(key = "us2010", group = "all")</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">act</span><span class="op">$</span><span class="fu">add_equation</span><span class="op">(</span>type <span class="op">=</span> <span class="st">"traitid"</span>, group <span class="op">=</span> <span class="st">"all"</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> traitid = list(key = "us2010", group = "all")</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">new_term</span> <span class="op">&lt;-</span> <span class="va">act</span><span class="op">$</span><span class="fu">modify_identity</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>M <span class="op">=</span> <span class="st">"angry"</span>, I <span class="op">=</span> <span class="st">"doctor"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">new_term</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 1 × 3</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   term          component ratings  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;list&gt;</span>   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> angry__doctor identity  <span style="color: #949494;">&lt;dbl [3]&gt;</span></span>
+<span class="r-in"><span><span class="va">new_term</span><span class="op">$</span><span class="va">ratings</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [[1]]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>         e         p         a </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> -1.050056  2.253300  1.078900 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">grid</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  M <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"tired"</span>, <span class="st">"taciturn"</span>, <span class="st">"angry"</span>, <span class="st">"happy"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  I <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"academic"</span>, <span class="st">"academic"</span>, <span class="st">"academic"</span>, <span class="st">"academic"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">act</span><span class="op">$</span><span class="fu">modify_identity</span><span class="op">(</span><span class="va">grid</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 4 × 3</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   term               component ratings  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;list&gt;</span>   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> tired__academic    identity  <span style="color: #949494;">&lt;dbl [3]&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> taciturn__academic identity  <span style="color: #949494;">&lt;dbl [3]&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> angry__academic    identity  <span style="color: #949494;">&lt;dbl [3]&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> happy__academic    identity  <span style="color: #949494;">&lt;dbl [3]&gt;</span></span>
+<span class="r-in"><span></span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

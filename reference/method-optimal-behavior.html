@@ -77,6 +77,40 @@
 <code><a href="method-reidentify.html">method-reidentify</a></code></p></div>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">act</span> <span class="op">&lt;-</span> <span class="fu"><a href="interact.html">interact</a></span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> dictionary = list(dataset = "usfullsurveyor2015", group = "all")</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> equations = list(key = "us2010", group = "all")</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">events</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>A <span class="op">=</span> <span class="st">"ceo"</span>, B <span class="op">=</span> <span class="st">"rescue"</span>, O <span class="op">=</span> <span class="st">"baby"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>A <span class="op">=</span> <span class="st">"ceo"</span>, B <span class="op">=</span> <span class="st">"torment"</span>, O <span class="op">=</span> <span class="st">"baby"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">d</span> <span class="op">&lt;-</span> <span class="va">act</span><span class="op">$</span><span class="fu">deflection</span><span class="op">(</span><span class="va">events</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">d</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #0000BB;"># Event deflection</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #0000BB;"># A data frame: 2 × 4</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   A     B       O     deflection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">*</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> ceo   rescue  baby        4.44</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> ceo   torment baby       50.1 </span>
+<span class="r-in"><span><span class="va">act</span><span class="op">$</span><span class="fu">optimal_behavior</span><span class="op">(</span><span class="va">d</span>, who <span class="op">=</span> <span class="st">"actor"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 2 × 3</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       Be    Bp    Ba</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>  0.901  2.17  1.18</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> -<span style="color: #BB0000;">1.32</span>   1.51  1.24</span>
+<span class="r-in"><span><span class="va">act</span><span class="op">$</span><span class="fu">optimal_behavior</span><span class="op">(</span><span class="va">d</span>, who <span class="op">=</span> <span class="st">"object"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 2 × 3</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        Be     Bp    Ba</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> -<span style="color: #BB0000;">0.035</span><span style="color: #BB0000; text-decoration: underline;">3</span> -<span style="color: #BB0000;">0.821</span> 0.484</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> -<span style="color: #BB0000;">0.167</span>   1.11  0.443</span>
+<span class="r-in"><span></span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

@@ -74,6 +74,64 @@ equation names available from the <code>actdata</code> package.</p>
     <p>An <code><a href="InteRactModel.html">InteRactModel</a></code> object.</p>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">act</span> <span class="op">&lt;-</span> <span class="fu">interact</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  dictionary <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>dataset <span class="op">=</span> <span class="st">"indiana2003"</span>, group <span class="op">=</span> <span class="st">"all"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  equations <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>key <span class="op">=</span> <span class="st">"nc1978"</span>, group <span class="op">=</span> <span class="st">"male"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">act</span><span class="op">$</span><span class="va">equations</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>               Ae'   Ap'   Aa'   Be'   Bp'   Ba'   Oe'   Op'   Oa'</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> (Intercept) -0.26 -0.10  0.14 -0.19  0.06  0.11 -0.11 -0.37  0.02</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Ae           0.41  0.00  0.05  0.11  0.00  0.02  0.00  0.00  0.00</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Ap           0.00  0.56  0.00  0.00  0.16 -0.06  0.00  0.00  0.00</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Aa           0.00  0.06  0.64  0.00  0.00  0.27  0.00  0.00  0.00</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Be           0.42 -0.07 -0.06  0.53 -0.13  0.04  0.11  0.18  0.02</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Bp          -0.02  0.44  0.00  0.00  0.70  0.00  0.00 -0.11  0.00</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Ba          -0.10  0.00  0.29 -0.12  0.00  0.64  0.00  0.00  0.00</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Oe           0.03  0.04  0.00  0.00  0.03  0.00  0.61 -0.08  0.03</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Op           0.06  0.00  0.00  0.05  0.01  0.00  0.00  0.66 -0.05</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Oa           0.00  0.00  0.00  0.00  0.00  0.00  0.03  0.07  0.66</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Ae:Be        0.05  0.00  0.00  0.00  0.01  0.00  0.03  0.00  0.00</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Ae:Op        0.03  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Ap:Bp        0.00 -0.05  0.00  0.00  0.00  0.00  0.00  0.00  0.00</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Aa:Ba        0.00  0.00 -0.06  0.00  0.00  0.00  0.00  0.00  0.00</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Be:Oe        0.12  0.01  0.00  0.11  0.03  0.00  0.04  0.03  0.00</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Be:Op       -0.05  0.00  0.00 -0.05  0.00  0.00  0.00  0.03  0.00</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Bp:Oe       -0.05  0.00  0.00 -0.02  0.00  0.00 -0.03  0.00  0.00</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Bp:Op        0.00  0.00  0.00  0.00  0.00  0.00  0.00 -0.05  0.00</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Ae:Be:Oe     0.03  0.00  0.00  0.02  0.00  0.00  0.00  0.00  0.00</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Ae:Be:Op    -0.02  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">act</span><span class="op">$</span><span class="fu">fundamentals</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"accuse"</span>, <span class="st">"mother"</span>, <span class="st">"surgeon"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># Source:  ()</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A data frame: 4 × 5</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   term    component     e     p     a</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">*</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> accuse  behavior  -<span style="color: #BB0000;">1.58</span>  0.51 0.77 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> mother  behavior   2.52  2.08 0.505</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> mother  identity   2.8   2.47 1.30 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> surgeon identity   2.76  2.82 0.81 </span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">act</span><span class="op">$</span><span class="va">dictionary</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 1,501 × 5</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    term            component ratings   n         sd       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>           <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;list&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;list&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;list&gt;</span>   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> abandon         behavior  <span style="color: #949494;">&lt;dbl [3]&gt;</span> <span style="color: #949494;">&lt;dbl [3]&gt;</span> <span style="color: #949494;">&lt;dbl [3]&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> abortion_clinic setting   <span style="color: #949494;">&lt;dbl [3]&gt;</span> <span style="color: #949494;">&lt;dbl [3]&gt;</span> <span style="color: #949494;">&lt;dbl [3]&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> abortionist     identity  <span style="color: #949494;">&lt;dbl [3]&gt;</span> <span style="color: #949494;">&lt;dbl [3]&gt;</span> <span style="color: #949494;">&lt;dbl [3]&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> abuse           behavior  <span style="color: #949494;">&lt;dbl [3]&gt;</span> <span style="color: #949494;">&lt;dbl [3]&gt;</span> <span style="color: #949494;">&lt;dbl [3]&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> abusive         modifier  <span style="color: #949494;">&lt;dbl [3]&gt;</span> <span style="color: #949494;">&lt;dbl [3]&gt;</span> <span style="color: #949494;">&lt;dbl [3]&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> accommodate     behavior  <span style="color: #949494;">&lt;dbl [3]&gt;</span> <span style="color: #949494;">&lt;dbl [3]&gt;</span> <span style="color: #949494;">&lt;dbl [3]&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> accommodating   modifier  <span style="color: #949494;">&lt;dbl [3]&gt;</span> <span style="color: #949494;">&lt;dbl [3]&gt;</span> <span style="color: #949494;">&lt;dbl [3]&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> accuse          behavior  <span style="color: #949494;">&lt;dbl [3]&gt;</span> <span style="color: #949494;">&lt;dbl [3]&gt;</span> <span style="color: #949494;">&lt;dbl [3]&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> address         behavior  <span style="color: #949494;">&lt;dbl [3]&gt;</span> <span style="color: #949494;">&lt;dbl [3]&gt;</span> <span style="color: #949494;">&lt;dbl [3]&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> admonish        behavior  <span style="color: #949494;">&lt;dbl [3]&gt;</span> <span style="color: #949494;">&lt;dbl [3]&gt;</span> <span style="color: #949494;">&lt;dbl [3]&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 1,491 more rows</span></span>
+<span class="r-in"><span></span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

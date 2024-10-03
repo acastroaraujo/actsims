@@ -75,6 +75,43 @@
     <p>A modified "<code>Situation</code>" object.</p>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">situation</span> <span class="op">&lt;-</span> <span class="fu"><a href="define_situation.html">define_situation</a></span><span class="op">(</span>agent1 <span class="op">=</span> <span class="fu"><a href="interact.html">interact</a></span><span class="op">(</span><span class="op">)</span>, agent2 <span class="op">=</span> <span class="fu"><a href="interact.html">interact</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> dictionary = list(dataset = "usfullsurveyor2015", group = "all")</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> equations = list(key = "us2010", group = "all")</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> dictionary = list(dataset = "usfullsurveyor2015", group = "all")</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> equations = list(key = "us2010", group = "all")</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="va">situation</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>  <span class="fu">sttn_activate</span><span class="op">(</span><span class="st">"agent1"</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>  <span class="fu">sttn_start</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>A <span class="op">=</span> <span class="st">"employer"</span>, B <span class="op">=</span> <span class="st">"hurt"</span>, O <span class="op">=</span> <span class="st">"employee"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>  <span class="fu">sttn_activate</span><span class="op">(</span><span class="st">"agent2"</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>  <span class="fu">sttn_new</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>A <span class="op">=</span> <span class="st">"employee"</span>, B <span class="op">=</span> <span class="st">"pull_away_from"</span>, O <span class="op">=</span> <span class="st">"employer"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>  <span class="fu">sttn_activate</span><span class="op">(</span><span class="st">"agent1"</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>  <span class="fu">sttn_new</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>A <span class="op">=</span> <span class="st">"employer"</span>, B <span class="op">=</span> <span class="st">"confront"</span>, O <span class="op">=</span> <span class="st">"employee"</span><span class="op">)</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>  <span class="fu">sttn_extract</span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span>  <span class="va">df</span><span class="op">$</span><span class="va">deflection</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 3 × 7</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    time agent1 agent2 A        B              O        deflection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>     0 A      O      employer hurt           employee       43.5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span>     1 O      A      employee pull_away_from employer       19.2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span>     2 A      O      employer confront       employee       13.3</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span>  <span class="va">df</span><span class="op">$</span><span class="va">transients</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 3 × 15</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    time agent1 agent2 A      B     O         Ae    Ap    Aa     Be     Bp     Ba</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>     0 A      O      emplo… hurt  empl… -<span style="color: #BB0000;">1.79</span>   3.05  1.62 -<span style="color: #BB0000;">2.38</span>   2.79   1.55 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span>     1 O      A      emplo… pull… empl… -<span style="color: #BB0000;">0.486</span> -<span style="color: #BB0000;">1.26</span> -<span style="color: #BB0000;">1.33</span> -<span style="color: #BB0000;">0.472</span> -<span style="color: #BB0000;">0.449</span> -<span style="color: #BB0000;">0.680</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span>     2 A      O      emplo… conf… empl… -<span style="color: #BB0000;">0.662</span>  1.83  1.35 -<span style="color: #BB0000;">0.607</span>  1.76   1.28 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 3 more variables: Oe &lt;dbl&gt;, Op &lt;dbl&gt;, Oa &lt;dbl&gt;</span></span>
+<span class="r-in"><span></span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

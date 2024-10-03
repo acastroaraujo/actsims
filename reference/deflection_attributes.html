@@ -67,6 +67,69 @@
     <p>A data frame containing either fundamentals, transients, or element-wise deflection scores</p>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">act</span> <span class="op">&lt;-</span> <span class="fu"><a href="interact.html">interact</a></span><span class="op">(</span><span class="st">"indiana2003"</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="st">"nc1978"</span>, <span class="st">"female"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> dictionary = list(dataset = "indiana2003", group = "all")</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">grid</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/expand.grid.html" class="external-link">expand.grid</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>  A <span class="op">=</span> <span class="st">"girlfriend"</span>,</span></span>
+<span class="r-in"><span>  B <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"help"</span>, <span class="st">"retaliate_against"</span>, <span class="st">"torment"</span>, <span class="st">"interrogate"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  O <span class="op">=</span> <span class="st">"boyfriend"</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">d</span> <span class="op">&lt;-</span> <span class="va">act</span><span class="op">$</span><span class="fu">deflection</span><span class="op">(</span><span class="va">grid</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">d</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #0000BB;"># Event deflection</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #0000BB;"># A data frame: 4 × 4</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   A          B                 O         deflection</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">*</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> girlfriend help              boyfriend       2.48</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> girlfriend retaliate_against boyfriend       9.19</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> girlfriend torment           boyfriend      16.4 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> girlfriend interrogate       boyfriend       7.35</span>
+<span class="r-in"><span><span class="fu">get_fundamentals</span><span class="op">(</span><span class="va">d</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 4 × 9</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      Ae    Ap    Aa    Be    Bp    Ba    Oe    Op    Oa</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>  2.46  1.62  1.27  3.00 2.58  1.46   1.72  1.37  1.08</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span>  2.46  1.62  1.27 -<span style="color: #BB0000;">1.33</span> 0.49  0.85   1.72  1.37  1.08</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span>  2.46  1.62  1.27 -<span style="color: #BB0000;">2.54</span> 0.865 0.575  1.72  1.37  1.08</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span>  2.46  1.62  1.27 -<span style="color: #BB0000;">0.77</span> 1.27  1.00   1.72  1.37  1.08</span>
+<span class="r-in"><span><span class="fu">get_transients</span><span class="op">(</span><span class="va">d</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 4 × 9</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>        Ae    Ap    Aa     Be    Bp    Ba    Oe      Op    Oa</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>  2.99    1.51  1.37  2.34  1.66  1.66  1.78   0.477  0.845</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span>  0.073<span style="text-decoration: underline;">7</span>  1.29  1.50 -<span style="color: #BB0000;">0.911</span> 0.814 1.09  0.796 -<span style="color: #BB0000;">0.067</span><span style="color: #BB0000; text-decoration: underline;">8</span> 0.759</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> -<span style="color: #BB0000;">0.838</span>   1.57  1.52 -<span style="color: #BB0000;">1.84</span>  1.22  0.867 0.470 -<span style="color: #BB0000;">0.393</span>  0.735</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span>  0.386   1.50  1.50 -<span style="color: #BB0000;">0.520</span> 1.27  1.21  0.896 -<span style="color: #BB0000;">0.089</span><span style="color: #BB0000; text-decoration: underline;">0</span> 0.770</span>
+<span class="r-in"><span><span class="fu">get_element_wise_deflection</span><span class="op">(</span><span class="va">d</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 4 × 9</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       Ae      Ap     Aa     Be        Bp     Ba      Oe    Op     Oa</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>  0.283 0.011<span style="text-decoration: underline;">6</span>  0.010<span style="text-decoration: underline;">9</span> 0.435  0.849     0.037<span style="text-decoration: underline;">4</span> 0.003<span style="text-decoration: underline;">38</span> 0.797 0.052<span style="text-decoration: underline;">8</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span>  5.67  0.108   0.053<span style="text-decoration: underline;">8</span> 0.172  0.105     0.058<span style="text-decoration: underline;">6</span> 0.854   2.07  0.100 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> 10.8   0.002<span style="text-decoration: underline;">06</span> 0.060<span style="text-decoration: underline;">5</span> 0.484  0.127     0.085<span style="text-decoration: underline;">5</span> 1.56    3.11  0.116 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span>  4.28  0.013<span style="text-decoration: underline;">8</span>  0.053<span style="text-decoration: underline;">7</span> 0.062<span style="text-decoration: underline;">3</span> 0.000<span style="text-decoration: underline;">018</span>9 0.043<span style="text-decoration: underline;">4</span> 0.680   2.13  0.093<span style="text-decoration: underline;">1</span></span>
+<span class="r-in"><span><span class="fu">get_long_form</span><span class="op">(</span><span class="va">d</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 36 × 9</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    A          B     O     id    dim   fundamentals transients deflections entity</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span> girlfriend help  boyf… A     e             2.46     2.99       0.283   girlf…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span> girlfriend help  boyf… A     p             1.62     1.51       0.011<span style="text-decoration: underline;">6</span>  girlf…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span> girlfriend help  boyf… A     a             1.27     1.37       0.010<span style="text-decoration: underline;">9</span>  girlf…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span> girlfriend help  boyf… B     e             3.00     2.34       0.435   help  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span> girlfriend help  boyf… B     p             2.58     1.66       0.849   help  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span> girlfriend help  boyf… B     a             1.46     1.66       0.037<span style="text-decoration: underline;">4</span>  help  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span> girlfriend help  boyf… O     e             1.72     1.78       0.003<span style="text-decoration: underline;">38</span> boyfr…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span> girlfriend help  boyf… O     p             1.37     0.477      0.797   boyfr…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span> girlfriend help  boyf… O     a             1.08     0.845      0.052<span style="text-decoration: underline;">8</span>  boyfr…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span> girlfriend reta… boyf… A     e             2.46     0.073<span style="text-decoration: underline;">7</span>     5.67    girlf…</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 26 more rows</span></span>
+<span class="r-in"><span></span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 
