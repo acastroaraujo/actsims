@@ -1,0 +1,12 @@
+pandoc: 3.1.11
+pkgdown: 2.1.1
+pkgdown_sha: ~
+articles:
+  articles/actsims: actsims.html
+  articles/bulk: bulk.html
+  articles/ews: ews.html
+  articles/situations: situations.html
+last_built: 2024-10-03T05:10Z
+urls:
+  reference: https://acastroaraujo.github.io/actsims/reference
+  article: https://acastroaraujo.github.io/actsims/articles
