@@ -18,6 +18,20 @@ a data frame of EPA profiles for the optimal behavior
 \description{
 The \verb{$optimal_behavior()} method does this and that..
 }
+\examples{
+act <- interact()
+
+events <- rbind(
+  data.frame(A = "ceo", B = "rescue", O = "baby"),
+  data.frame(A = "ceo", B = "torment", O = "baby")
+)
+
+d <- act$deflection(events)
+d
+act$optimal_behavior(d, who = "actor")
+act$optimal_behavior(d, who = "object")
+
+}
 \seealso{
 Other InteRactModel methods: 
 \code{\link{method-add-equation}},

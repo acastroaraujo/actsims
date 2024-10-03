@@ -22,6 +22,17 @@ Adding \code{"emotionid"} is needed to use the \verb{$characteristic_emotion()} 
 
 Adding \code{"traitid"} is needed to use the \verb{$modify_identity()} method.
 }
+\examples{
+act <- interact()
+act
+
+act$add_equation(type = "traitid", group = "all")
+act
+
+act$add_equation(type = "emotionid", group = "male")
+act
+
+}
 \seealso{
 Other InteRactModel methods: 
 \code{\link{method-characteristic-emotion}},

@@ -21,8 +21,23 @@ works seamlessly with the family of \verb{get_*} functions.
 \description{
 The \verb{$deflection()} method calculates the deflection of an ABO event.
 }
+\examples{
+act <- interact()
+act$deflection(data.frame(A = "mother", B = "kick", O = "baby"))
+
+grid <- expand.grid(
+  A = c("girlfriend", "medic", "bohemian", "dairy_farmer", "daredevil"),
+  B = c("help", "retaliate_against", "torment", "interrogate"),
+  O = c("toddler", "capitalist", "boyfriend", "prisoner")
+)
+
+head(grid, n = 15)
+
+act$deflection(grid)
+
+}
 \seealso{
-\code{\link[=get_transients]{get_transients()}}, \code{\link[=get_fundamentals]{get_fundamentals()}}, \code{\link[=get_element_wise_deflection]{get_element_wise_deflection()}}
+\code{\link[=get_transients]{get_transients()}}, \code{\link[=get_fundamentals]{get_fundamentals()}}, \code{\link[=get_element_wise_deflection]{get_element_wise_deflection()}}, \code{\link[=get_long_form]{get_long_form()}}
 
 Other InteRactModel methods: 
 \code{\link{method-add-equation}},

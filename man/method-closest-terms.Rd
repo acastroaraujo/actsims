@@ -26,6 +26,24 @@ a list of closest terms found in \verb{$dictionary}, sorted by closeness.
 \description{
 The \verb{$closest_terms()} method does this and that..
 }
+\examples{
+act <- interact()
+
+act$closest_terms(c(e = 2, p = 1, a = 0), component = "identity", max_dist = 0.2)
+act$closest_terms(c(e = 2, p = 1, a = 0), component = "behavior", max_dist = 0.2)
+act$closest_terms(c(e = 2, p = 1, a = 0), component = "modifier", max_dist = 0.2)
+
+## Using `$closest_terms()` on event deflection data frames
+
+d <- act$deflection(list(A = "ceo", B = "kick", O = "ceo"))
+d
+opt_reidentify <- act$reidentify(d, who = "object")
+opt_reidentify
+act$closest_terms(opt_reidentify, max_dist = 1)
+opt_behavior <- act$optimal_behavior(d, who = "object")
+act$closest_terms(opt_behavior, max_dist = 0.5, component = "behavior")
+
+}
 \seealso{
 Other InteRactModel methods: 
 \code{\link{method-add-equation}},

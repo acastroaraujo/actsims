@@ -27,3 +27,16 @@ An \code{\link{InteRactModel}} object.
 Create a new \code{\link{InteRactModel}} object by specifying dictionary and
 equation names available from the \code{actdata} package.
 }
+\examples{
+act <- interact(
+  dictionary = list(dataset = "indiana2003", group = "all"),
+  equations = list(key = "nc1978", group = "male")
+)
+
+act$equations
+
+act$fundamentals(c("accuse", "mother", "surgeon"))
+
+act$dictionary
+
+}

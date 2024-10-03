@@ -13,10 +13,24 @@ reidentify(x, who = c("actor", "object"))
 \item{who}{(character) either "actor" or "object"}
 }
 \value{
-a data frame of EPA profiles for the optimal reidentification
+a data frame of EPA profiles for the optimal re-identification
 }
 \description{
 The \verb{$reidentify()} method does this and that..
+}
+\examples{
+act <- interact()
+
+events <- rbind(
+  data.frame(A = "ceo", B = "rescue", O = "baby"),
+  data.frame(A = "ceo", B = "torment", O = "baby")
+)
+
+d <- act$deflection(events)
+d
+act$reidentify(d, who = "actor")
+act$reidentify(d, who = "object")
+
 }
 \seealso{
 Other InteRactModel methods: 

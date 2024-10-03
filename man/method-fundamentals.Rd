@@ -16,9 +16,16 @@ A data frame of EPA profiles
 \description{
 The \verb{$fundamentals()} method does this and that..
 }
-\seealso{
-\code{\link[=get_fundamentals]{get_fundamentals()}}
+\examples{
+act <- interact()
 
+act$fundamentals("ceo")
+
+x <- sample(act$dictionary$term, size = 20)
+act$fundamentals(x)
+
+}
+\seealso{
 Other InteRactModel methods: 
 \code{\link{method-add-equation}},
 \code{\link{method-characteristic-emotion}},

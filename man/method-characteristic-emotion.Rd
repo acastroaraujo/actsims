@@ -13,6 +13,17 @@ characteristic_emotion(events)
 \description{
 Estimate EPA profile of a characteristic emotion
 }
+\examples{
+act <- interact()
+
+act$add_equation(type = "emotionid", group = "male")
+
+act$characteristic_emotion(list(I = "brute"))
+
+x <- list(I = c("censor", "grandson", "infant", "australian", "job_seeker"))
+act$characteristic_emotion(x)
+
+}
 \seealso{
 Other InteRactModel methods: 
 \code{\link{method-add-equation}},

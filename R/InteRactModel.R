@@ -17,6 +17,18 @@
 #'
 #' @return An [`InteRactModel`] object.
 #'
+#' @examples
+#' act <- interact(
+#'   dictionary = list(dataset = "indiana2003", group = "all"),
+#'   equations = list(key = "nc1978", group = "male")
+#' )
+#'
+#' act$equations
+#'
+#' act$fundamentals(c("accuse", "mother", "surgeon"))
+#'
+#' act$dictionary
+#'
 #' @export
 interact <- function(dictionary = list("usfullsurveyor2015", "all"), equations = list("us2010", "all")) {
 
@@ -40,7 +52,6 @@ interact <- function(dictionary = list("usfullsurveyor2015", "all"), equations =
 #'   by the [interact()] function.
 #'
 #'   The object stores (1) a `$dictionary` of EPA ratings and (2) a set of `$equations` used to calculate "transient impressions."
-#'
 #'
 #' @section Methods:
 #'  `InteRactModel` objects have the following associated methods, many of which have their own documentation pages:
@@ -144,7 +155,13 @@ InteRactModel <- R6::R6Class(
 #'
 #' @return A data frame of EPA profiles
 #'
-#' @seealso [get_fundamentals()]
+#' @examples
+#' act <- interact()
+#'
+#' act$fundamentals("ceo")
+#'
+#' x <- sample(act$dictionary$term, size = 20)
+#' act$fundamentals(x)
 #'
 fundamentals <- function(x) {
 
@@ -190,7 +207,21 @@ InteRactModel$set("public", "fundamentals", fundamentals)
 #' This data frame has an `event_deflection` S3 class with custom printing that
 #' works seamlessly with the family of `get_*` functions.
 #'
-#' @seealso [get_transients()], [get_fundamentals()], [get_element_wise_deflection()]
+#' @seealso [get_transients()], [get_fundamentals()], [get_element_wise_deflection()], [get_long_form()]
+#'
+#' @examples
+#' act <- interact()
+#' act$deflection(data.frame(A = "mother", B = "kick", O = "baby"))
+#'
+#' grid <- expand.grid(
+#'   A = c("girlfriend", "medic", "bohemian", "dairy_farmer", "daredevil"),
+#'   B = c("help", "retaliate_against", "torment", "interrogate"),
+#'   O = c("toddler", "capitalist", "boyfriend", "prisoner")
+#' )
+#'
+#' head(grid, n = 15)
+#'
+#' act$deflection(grid)
 #'
 deflection <- function(events) {
 
@@ -229,6 +260,19 @@ InteRactModel$set("public", "deflection", value = deflection)
 #' @param who (character) either "actor" or "object"
 #'
 #' @return a data frame of EPA profiles for the optimal behavior
+#'
+#' @examples
+#' act <- interact()
+#'
+#' events <- rbind(
+#'   data.frame(A = "ceo", B = "rescue", O = "baby"),
+#'   data.frame(A = "ceo", B = "torment", O = "baby")
+#' )
+#'
+#' d <- act$deflection(events)
+#' d
+#' act$optimal_behavior(d, who = "actor")
+#' act$optimal_behavior(d, who = "object")
 #'
 optimal_behavior <- function(x, who = c("actor", "object")) {
 
@@ -269,7 +313,20 @@ InteRactModel$set("public", "optimal_behavior", value = optimal_behavior)
 #'
 #' @param who (character) either "actor" or "object"
 #'
-#' @return a data frame of EPA profiles for the optimal reidentification
+#' @return a data frame of EPA profiles for the optimal re-identification
+#'
+#' @examples
+#' act <- interact()
+#'
+#' events <- rbind(
+#'   data.frame(A = "ceo", B = "rescue", O = "baby"),
+#'   data.frame(A = "ceo", B = "torment", O = "baby")
+#' )
+#'
+#' d <- act$deflection(events)
+#' d
+#' act$reidentify(d, who = "actor")
+#' act$reidentify(d, who = "object")
 #'
 reidentify <- function(x, who = c("actor", "object")) {
 
@@ -312,9 +369,10 @@ InteRactModel$set("public", "reidentify", value = reidentify)
 #' @return A data frame with the maximally confirming EPA profiles
 #'
 #' @examples
-#' \dontrun{
+#' act <- interact()
+#'
 #' act$max_confirm(
-#'   events = tibble(A = "god", O = "deadbeat"),
+#'   events = dplyr::tibble(A = "god", O = "deadbeat"),
 #'   solve_for = "behavior"
 #' )
 #'
@@ -327,7 +385,6 @@ InteRactModel$set("public", "reidentify", value = reidentify)
 #'   events = data.frame(B = "kill", O = "deadbeat"),
 #'   solve_for = "actor"
 #' )
-#' }
 #'
 max_confirm <- function(events, solve_for = c("behavior", "actor", "object")) {
 
@@ -365,6 +422,23 @@ InteRactModel$set("public", "max_confirm", value = max_confirm)
 #' It also works with one row data frame with `e`, `p`, and `a` columns
 #'
 #' @return a list of closest terms found in `$dictionary`, sorted by closeness.
+#'
+#' @examples
+#' act <- interact()
+#'
+#' act$closest_terms(c(e = 2, p = 1, a = 0), component = "identity", max_dist = 0.2)
+#' act$closest_terms(c(e = 2, p = 1, a = 0), component = "behavior", max_dist = 0.2)
+#' act$closest_terms(c(e = 2, p = 1, a = 0), component = "modifier", max_dist = 0.2)
+#'
+#' ## Using `$closest_terms()` on event deflection data frames
+#'
+#' d <- act$deflection(list(A = "ceo", B = "kick", O = "ceo"))
+#' d
+#' opt_reidentify <- act$reidentify(d, who = "object")
+#' opt_reidentify
+#' act$closest_terms(opt_reidentify, max_dist = 1)
+#' opt_behavior <- act$optimal_behavior(d, who = "object")
+#' act$closest_terms(opt_behavior, max_dist = 0.5, component = "behavior")
 #'
 closest_terms <- function(epa, component = c("identity", "behavior", "modifier"), max_dist = 1) {
   epa <- validate_epa(epa)
@@ -406,6 +480,16 @@ InteRactModel$set("public", "closest_terms", value = closest_terms)
 #' @param type one of `"emotionid"` or `"traitid"`
 #' @param group one of `"all"`, `"female"`, or `"male"`
 #'
+#' @examples
+#' act <- interact()
+#' act
+#'
+#' act$add_equation(type = "traitid", group = "all")
+#' act
+#'
+#' act$add_equation(type = "emotionid", group = "male")
+#' act
+#'
 add_equation <- function(type = c("emotionid", "traitid"), group = c("all", "female", "male")) {
 
     equation_type <- match.arg(type)
@@ -414,7 +498,7 @@ add_equation <- function(type = c("emotionid", "traitid"), group = c("all", "fem
     if (equation_type == "emotionid") {
       key <- private$.info$impressionabo$key
       equations <- validate_emotionid_equations(c(key, group))
-      private$.info$traitid <- list(key = key, group = group, equation_type = equation_type)
+      private$.info$emotionid <- list(key = key, group = group, equation_type = equation_type)
       cli::cli_bullets(c("v" = "emotionid = list(key = \"{key}\", group = \"{group}\")"))
       private$.emotionid <- do.call(get_equation, equations)
     }
@@ -442,6 +526,22 @@ InteRactModel$set("public", "add_equation", value = add_equation)
 #' @param events A data frame with `M` (modifier) and `I` (identity) columns
 #'
 #' @return A new dictionary rating for the modified identities
+#'
+#' @examples
+#' act <- interact()
+#'
+#' act$add_equation(type = "traitid", group = "all")
+#'
+#' new_term <- act$modify_identity(list(M = "angry", I = "doctor"))
+#' new_term
+#' new_term$ratings
+#'
+#' grid <- data.frame(
+#'   M = c("tired", "taciturn", "angry", "happy"),
+#'   I = c("academic", "academic", "academic", "academic")
+#' )
+#'
+#' act$modify_identity(grid)
 #'
 modify_identity <- function(events) {
 
@@ -480,6 +580,16 @@ InteRactModel$set("public", "modify_identity", modify_identity)
 #' @family InteRactModel methods
 #'
 #' @param events A data frame with an `I` column (for "identity")
+#'
+#' @examples
+#' act <- interact()
+#'
+#' act$add_equation(type = "emotionid", group = "male")
+#'
+#' act$characteristic_emotion(list(I = "brute"))
+#'
+#' x <- list(I = c("censor", "grandson", "infant", "australian", "job_seeker"))
+#' act$characteristic_emotion(x)
 #'
 characteristic_emotion <- function(events) {
 

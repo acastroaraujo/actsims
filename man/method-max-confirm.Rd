@@ -23,9 +23,10 @@ in an actor-object pairing.
 does this and that..
 }
 \examples{
-\dontrun{
+act <- interact()
+
 act$max_confirm(
-  events = tibble(A = "god", O = "deadbeat"),
+  events = dplyr::tibble(A = "god", O = "deadbeat"),
   solve_for = "behavior"
 )
 
@@ -38,7 +39,6 @@ act$max_confirm(
   events = data.frame(B = "kill", O = "deadbeat"),
   solve_for = "actor"
 )
-}
 
 }
 \seealso{

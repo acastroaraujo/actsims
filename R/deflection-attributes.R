@@ -8,6 +8,23 @@
 #' @param x an "`event_deflection`" object created by the [`$deflection()`][`method-deflection`] method
 #'
 #' @return A data frame containing either fundamentals, transients, or element-wise deflection scores
+#'
+#' @examples
+#' act <- interact("indiana2003", list("nc1978", "female"))
+#'
+#' grid <- expand.grid(
+#'   A = "girlfriend",
+#'   B = c("help", "retaliate_against", "torment", "interrogate"),
+#'   O = "boyfriend"
+#' )
+#'
+#' d <- act$deflection(grid)
+#' d
+#' get_fundamentals(d)
+#' get_transients(d)
+#' get_element_wise_deflection(d)
+#' get_long_form(d)
+#'
 
 #' @rdname deflection_attributes
 #' @export

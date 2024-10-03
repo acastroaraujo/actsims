@@ -17,6 +17,23 @@ A new dictionary rating for the modified identities
 The \verb{$modify_identity()} applies the modifier equations (\code{traitid})
 to find the EPA profile of a modified identity.
 }
+\examples{
+act <- interact()
+
+act$add_equation(type = "traitid", group = "all")
+
+new_term <- act$modify_identity(list(M = "angry", I = "doctor"))
+new_term
+new_term$ratings
+
+grid <- data.frame(
+  M = c("tired", "taciturn", "angry", "happy"),
+  I = c("academic", "academic", "academic", "academic")
+)
+
+act$modify_identity(grid)
+
+}
 \seealso{
 Other InteRactModel methods: 
 \code{\link{method-add-equation}},

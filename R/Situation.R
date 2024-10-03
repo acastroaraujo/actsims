@@ -260,7 +260,24 @@ Situation$set(
 #' @param event an ABO event.
 #'
 #' @return A modified "`Situation`" object.
-
+#'
+#' @examples
+#'
+#' situation <- define_situation(agent1 = interact(), agent2 = interact())
+#'
+#' df <- situation |>
+#'   sttn_activate("agent1") |>
+#'   sttn_start(list(A = "employer", B = "hurt", O = "employee")) |>
+#'   sttn_activate("agent2") |>
+#'   sttn_new(list(A = "employee", B = "pull_away_from", O = "employer")) |>
+#'   sttn_activate("agent1") |>
+#'   sttn_new(list(A = "employer", B = "confront", O = "employee")) |>
+#'   sttn_extract()
+#'
+#'   df$deflection
+#'
+#'   df$transients
+#'
 #' @rdname sttn_family
 #' @export
 sttn_activate <- function(x, which) {
