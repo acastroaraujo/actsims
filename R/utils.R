@@ -10,14 +10,12 @@ validate_new_dictionary <- function(dict) {
   if (df_ok) {
     cols_ok <- all(purrr::map_lgl(dict$ratings, \(x) all(names(x) == c("e", "p", "a"))))
     if (!cols_ok) cli::cli_abort("The ratings column must be a list of epa ratings", class = NULL)
-  } else {
     return(dict)
   }
 
   ok <- all(c("term", "component", "ratings", "e", "p", "a") %in% colnames(dict))
 
   if (ok) {
-
     out <- dict[c("term", "component")]
     out$ratings <- apply(dict[c("e", "p", "a")], 1, c, simplify = FALSE)
     return(out)
