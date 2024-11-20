@@ -13,7 +13,7 @@ validate_new_dictionary <- function(dict) {
     return(dict)
   }
 
-  ok <- all(c("term", "component", "ratings", "e", "p", "a") %in% colnames(dict))
+  ok <- all(c("term", "component", "e", "p", "a") %in% colnames(dict))
 
   if (ok) {
     out <- dict[c("term", "component")]
