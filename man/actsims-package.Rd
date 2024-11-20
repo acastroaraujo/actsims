@@ -18,7 +18,13 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: andrés castro araújo \email{andres.castro.araujo@duke.edu}
+\strong{Maintainer}: Andrés Castro Araújo \email{andres.castro.araujo@duke.edu}
+
+Authors:
+\itemize{
+  \item Em Maloney
+  \item Aidan Combs
+}
 
 }
 \keyword{internal}

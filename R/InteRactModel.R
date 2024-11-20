@@ -107,7 +107,7 @@ InteRactModel <- R6::R6Class(
       if (missing(value)) {
         private$.dictionary
       } else {
-        validate_new_dictionary(value)
+        value <- validate_new_dictionary(value)
         cli::cli_alert_success("added new dictionary")
         private$.dictionary <- value
         private$.info$dict$dataset <- "External [!]"

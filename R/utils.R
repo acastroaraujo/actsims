@@ -5,11 +5,26 @@ validate_new_dictionary <- function(dict) {
 
   ## this gets used in the active binding dictionary field.
 
-  ok <- all(c("term", "ratings") %in% colnames(dict))
-  if (!ok) cli::cli_abort("New dictionary must be a data frame with `term` and `ratings` columns", call = NULL)
+  df_ok <- all(c("term", "component", "ratings") %in% colnames(dict))
 
-  ok <- all(purrr::map_lgl(dict$ratings, \(x) all(names(x) == c("e", "p", "a"))))
-  if (!ok) cli::cli_abort("The ratings column must be a named list of epa ratings", class = NULL)
+  if (df_ok) {
+    cols_ok <- all(purrr::map_lgl(dict$ratings, \(x) all(names(x) == c("e", "p", "a"))))
+    if (!cols_ok) cli::cli_abort("The ratings column must be a list of epa ratings", class = NULL)
+  } else {
+    return(dict)
+  }
+
+  ok <- all(c("term", "component", "ratings", "e", "p", "a") %in% colnames(dict))
+
+  if (ok) {
+
+    out <- dict[c("term", "component")]
+    out$ratings <- apply(dict[c("e", "p", "a")], 1, c, simplify = FALSE)
+    return(out)
+
+  } else {
+    cli::cli_abort("The dictionary is malformed.", class = NULL)
+  }
 
 }
 
