@@ -4,9 +4,10 @@ pkgdown_sha: ~
 articles:
   articles/actsims: actsims.html
   articles/bulk: bulk.html
+  articles/dictionaries: dictionaries.html
   articles/ews: ews.html
   articles/situations: situations.html
-last_built: 2024-11-20T20:16Z
+last_built: 2025-02-21T23:59Z
 urls:
   reference: https://acastroaraujo.github.io/actsims/reference
   article: https://acastroaraujo.github.io/actsims/articles

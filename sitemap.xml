@@ -4,6 +4,7 @@
 <url><loc>https://acastroaraujo.github.io/actsims/LICENSE.html</loc></url>
 <url><loc>https://acastroaraujo.github.io/actsims/articles/actsims.html</loc></url>
 <url><loc>https://acastroaraujo.github.io/actsims/articles/bulk.html</loc></url>
+<url><loc>https://acastroaraujo.github.io/actsims/articles/dictionaries.html</loc></url>
 <url><loc>https://acastroaraujo.github.io/actsims/articles/ews.html</loc></url>
 <url><loc>https://acastroaraujo.github.io/actsims/articles/index.html</loc></url>
 <url><loc>https://acastroaraujo.github.io/actsims/articles/situations.html</loc></url>
@@ -11,8 +12,10 @@
 <url><loc>https://acastroaraujo.github.io/actsims/index.html</loc></url>
 <url><loc>https://acastroaraujo.github.io/actsims/reference/InteRactModel.html</loc></url>
 <url><loc>https://acastroaraujo.github.io/actsims/reference/Situation.html</loc></url>
+<url><loc>https://acastroaraujo.github.io/actsims/reference/SituationExperimental.html</loc></url>
 <url><loc>https://acastroaraujo.github.io/actsims/reference/actsims-package.html</loc></url>
 <url><loc>https://acastroaraujo.github.io/actsims/reference/define_situation.html</loc></url>
+<url><loc>https://acastroaraujo.github.io/actsims/reference/define_situation_experimental.html</loc></url>
 <url><loc>https://acastroaraujo.github.io/actsims/reference/deflection_attributes.html</loc></url>
 <url><loc>https://acastroaraujo.github.io/actsims/reference/index.html</loc></url>
 <url><loc>https://acastroaraujo.github.io/actsims/reference/interact.html</loc></url>
