@@ -1,0 +1,81 @@
+---
+title: "Working With Various Dictionaries"
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup, message=FALSE}
+library(tidyverse)
+library(actsims)
+```
+
+Sometimes we will need to modify existing dictionaries so we get the right combination of identities and behaviors.
+
+*Note. Better documentation coming shortly.*
+
+## Merging Two Different Dictionaries
+
+The following code merges two dictionaries: `usfullsurveyor2015` and `mostafaviestimates2022`.
+
+It uses the `anti_join()` function from the dplyr package to keep all the rows from the `mostafaviestimates2022` dictionary that don't have a match in the `usfullsurveyor2015` dictionary.
+
+```{r}
+act <- interact(dictionary = "usfullsurveyor2015")
+mostafavi <- interact("mostafaviestimates2022")
+
+new_rows <- dplyr::anti_join(mostafavi$dictionary, act$dictionary)
+glimpse(new_rows)
+
+act$dictionary <- dplyr::bind_rows(act$dictionary, new_rows)
+act
+```
+
+*Note that a message appeared signaling that the replacement was successful.*
+
+You should now be able to use the new extended dictionary.
+
+## Adding Modified Identities
+
+Sometimes we will want to add modified identities, which we can get with the `$modify_identity()` method.
+
+To do this we will first have to add a modifier equation with the `$add_equation()` method and then create a grid of modifiers and identities.
+
+```{r}
+act <- interact(dictionary = "usfullsurveyor2015")
+act$add_equation(type = "traitid", group = "all")
+
+modifiers <- act$dictionary |> 
+  dplyr::filter(component == "modifier") |> 
+  ## get thirty random modifiers
+  dplyr::slice_sample(n = 30) |> 
+  dplyr::pull(term)
+
+identities <- act$dictionary |> 
+  dplyr::filter(component == "identity") |> 
+  ## get thirty random identities
+  dplyr::slice_sample(n = 30) |> 
+  dplyr::pull(term)
+
+new_identities <- tidyr::crossing(
+  M = modifiers,
+  I = identities
+)
+
+glimpse(new_identities)
+
+new_rows <- act$modify_identity(new_identities)
+
+glimpse(new_rows)
+```
+
+Now we just do as we did before.
+
+```{r}
+act$dictionary <- dplyr::bind_rows(act$dictionary, new_rows)
+tail(act$dictionary) ## verify that new identities are present.
+```

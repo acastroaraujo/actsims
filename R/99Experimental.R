@@ -1,5 +1,5 @@
 
-#' Create a Definition of the Situation
+#' Experimental Definition of the Situation
 #'
 #' @param ... various `InteRactModel` objects created by the `interact()`,
 #'   they must be named "agent1", "agent2", "agent3", and so on.

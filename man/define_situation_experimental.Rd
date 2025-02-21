@@ -2,7 +2,7 @@
 % Please edit documentation in R/99Experimental.R
 \name{define_situation_experimental}
 \alias{define_situation_experimental}
-\title{Create a Definition of the Situation}
+\title{Experimental Definition of the Situation}
 \usage{
 define_situation_experimental(...)
 }
@@ -14,5 +14,5 @@ they must be named "agent1", "agent2", "agent3", and so on.}
 A \code{SituationExperimental} R6 object.
 }
 \description{
-Create a Definition of the Situation
+Experimental Definition of the Situation
 }
