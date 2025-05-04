@@ -59,7 +59,7 @@ reverse_ao <- function(x) {
   x
 }
 
-epa_selector <- function(x = c("A", "B", "O")) {
+epa_selector <- function(x = c("A", "B", "O", "I", "M")) {
   x <- match.arg(x)
   paste0(rep(x, 3), c("e", "p", "a"))
 }

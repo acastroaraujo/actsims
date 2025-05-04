@@ -30,7 +30,7 @@
 #' act$dictionary
 #'
 #' @export
-interact <- function(dictionary = list("usfullsurveyor2015", "all"), equations = list("us2010", "all")) {
+interact <- function(dictionary = list("usfullsurveyor2015", "all"), equations = list("us2010", "all"), traitid_eq = NULL) {
 
   if (missing(dictionary)) {
     cli::cli_bullets(c("v" = "dictionary = list(dataset = \"usfullsurveyor2015\", group = \"all\")"))
@@ -637,4 +637,94 @@ characteristic_emotion <- function(events) {
 }
 InteRactModel$set("public", name = "characteristic_emotion", value = characteristic_emotion)
 
+# ------------------------------------------ EXPERIMENTAL
 
+#' @title Calculate modifier event deflection scores
+#'
+#' This is a modification of the ABO event object, but for modified identities.
+#' The logic behind this is thinking of modifying an identity AS A TYPE OF EVENT
+#' TODO: THIS WAY OF CONSIDERING MODIFIERS NEEDS VALIDATION
+#' Logisitically this is very similar to the modify_identity function in InteractModel.R, but it includes deflection and outputs an object rather than a df
+#' Keep in mind that total deflection is NOT comparable to deflection of ABO events as it is the sum of two elements, not three.
+#' But element-wise deflection should be better I think.
+#'
+#' @name method-modifierdeflection
+#' @aliases modifierdeflection
+#' @family InteRactModel methods
+#'
+#' @description The `$modifier_deflection()` method calculates the deflection of an ABO event.
+#'
+#' @param events a data frame with M and I (modifier and identity)
+#'
+#' Each has to exist within the `$dictionary` field
+#'
+#' @return An "modifier deflection" data frame. Parallel to an "event deflection" data frame.
+#'
+#' This data frame has an `modifier_deflection` S3 class with custom printing that
+#' works seamlessly with the family of `get_*` functions.
+#'
+#' @seealso [get_transients()], [get_fundamentals()], [get_element_wise_deflection()], [get_long_form()]
+#'
+#' @examples
+#' act <- interact()
+#' act$modifier_deflection(data.frame(M = "sad", I = "mother"))
+#'
+#' grid <- expand.grid(
+#'   M = c("small", "happy", "afraid", "smart", "trusting"),
+#'   I = c("girlfriend", "medic", "bohemian", "dairy_farmer", "daredevil")
+#' )
+#'
+#' head(grid, n = 15)
+#'
+#' act$modifier_deflection(grid)
+#'
+modifier_deflection <- function(events) {
+
+  events <- validate_mi_events(events, private$.dictionary)
+  validate_modify_identity(names(events))
+
+  fundamentals <- stack_mi_ratings(events, private$.dictionary)
+  fundamentals <- as.data.frame(fundamentals)
+
+  M <- get_data_matrix(fundamentals, private$.traitid)
+
+  transients <- M %*% private$.traitid
+  element_wise_deflection <- (transients - fundamentals)^2
+  events$deflection <- unname(rowSums(element_wise_deflection))
+  events <- dplyr::as_tibble(events)
+
+  # S3 class output
+  structure(
+    events,
+    class = c("event_deflection", class(events)),
+    element_wise_deflection = dplyr::as_tibble(element_wise_deflection),
+    transients = dplyr::as_tibble(transients),
+    fundamentals = dplyr::as_tibble(fundamentals)
+  )
+}
+InteRactModel$set("public", "modifier_deflection", value = modifier_deflection)
+
+#' @title Returns other types of equations, if present. EXPERIMENTAL. RIGHT NOW ONLY TRAITID IS IMPLEMENTED.
+#'
+#' @name method-get-equations
+#' @aliases get_equations
+#' @family InteRactModel methods
+#'
+#' @examples
+#' act <- interact()
+#'
+#' act$add_equation(type = "traitid")
+#'
+#' act$get_equations(type = "traitid")
+#'
+get_equations <- function(type = "traitid") {
+
+  eqs <- NULL
+
+  if(type == "traitid"){
+    eqs <- private$.traitid
+  }
+
+  return(eqs)
+}
+InteRactModel$set("public", name = "get_equations", value = get_equations)

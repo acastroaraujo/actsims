@@ -10,19 +10,29 @@
 define_situation_experimental <- function(...) {
   agents <- list(...)
 
+  # Handle case where a single unnamed list is passed
+  if (length(agents) == 1 && is.list(agents[[1]]) && is.null(names(agents))) {
+    agents <- agents[[1]]
+  }
+
   ok <- all(purrr::map_lgl(agents, \(x) inherits(x, "InteRactModel")))
 
   if (!ok) {
     cli::cli_abort("all agents must be of class `InteRactModel`", call = NULL)
   }
 
-  ok <- all(grepl("^agent\\d+$", names(list(...))))
+  ok <- all(grepl("^agent\\d+$", names(
+    # list(...)
+    agents
+    )))
 
   if (!ok) {
     cli::cli_abort("all agents must be named correctly, e.g., agent1, agent2, and so on.`", call = NULL)
   }
 
-  SituationExperimental$new(...)
+  # SituationExperimental$new(...)
+  # SituationExperimental$new(!!!agents)
+  do.call(SituationExperimental$new, agents)
 }
 
 
@@ -44,6 +54,12 @@ SituationExperimental <- R6::R6Class(
     initialize = function(...) {
 
       agents <- list(...)
+
+      # Handle the case where a single unnamed list is passed as input
+      if (length(agents) == 1 && is.list(agents[[1]]) && is.null(names(agents))) {
+        agents <- agents[[1]]
+      }
+
       field_names <- names(agents)
 
       for (i in seq_along(agents)) {
@@ -124,50 +140,81 @@ SituationExperimental <- R6::R6Class(
 SituationExperimental$set(
   "public", "new",
   function(event) {
-
     if (is.null(self$fundamentals)) {
       cli::cli_abort("must `$start` the situation first", call = NULL)
+    }
+
+    # is the event a triple or a modification? if neither, abort
+    if (length(event) > 3 | length(event) < 2){
+      cli::cli_abort("event is malformed: must have three elements if a triple or two elements if a modification", call = NULL)
+    } else if (length(event) == 3){
+        event_type = "triple"
+    } else if (length(event) == 2){
+        event_type = "modification"
     }
 
     actor_select <- epa_selector("A")
     behavior_select <- epa_selector("B")
     object_select <- epa_selector("O")
+    mi_actor_select <- epa_selector("I")
 
     lookup <- self$fundamentals$identity
     names(lookup) <- self$fundamentals$id
 
-    actor <- self$fundamentals |>
-      dplyr::filter(identity == event$A) |>
-      dplyr::pull(id)
+    # get the agentN ids for the actor and object
+    if(event_type == "triple"){
+      actor <- self$fundamentals |>
+        dplyr::filter(identity == event$A) |>
+        dplyr::pull(id)
 
-    obj <- self$fundamentals |>
-      dplyr::filter(identity == event$O) |>
-      dplyr::pull(id)
+      obj <- self$fundamentals |>
+        dplyr::filter(identity == event$O) |>
+        dplyr::pull(id)
+    } else if(event_type == "modification"){
+      actor <- self$fundamentals |>
+        dplyr::filter(identity == event$I) |>
+        dplyr::pull(id)
+    }
 
     ## Case 1, start of history
 
     if (is.null(self$history)) {
 
       private$.time <- 0L
-
-      out <- self[[actor]]$deflection(event)
       start_row <- dplyr::tibble(time = 0L)
       start_row <- dplyr::bind_cols(start_row, event)
-      deflection <- dplyr::bind_cols(start_row, out["deflection"])
+
+      if(event_type == "triple"){
+        out <- self[[actor]]$deflection(event)
+        deflection <- dplyr::bind_cols(start_row, out["deflection"])
+        element_wise_deflection <- dplyr::bind_cols(start_row, get_element_wise_deflection(out))
+      } else if(event_type == "modification"){
+        out <- self[[actor]]$modifier_deflection(event)
+        deflection <- tibble()
+        element_wise_deflection <- tibble()
+      }
+
       fundamentals <- dplyr::bind_cols(start_row, get_fundamentals(out))
       transients <- dplyr::bind_cols(start_row, get_transients(out))
-      element_wise_deflection <- dplyr::bind_cols(start_row, get_element_wise_deflection(out))
       self$history <- list(deflection = deflection, fundamentals = fundamentals, transients = transients, element_wise_deflection = element_wise_deflection)
 
-      self$transients[[lookup[[actor]]]] <- purrr::set_names(
-        x = transients[actor_select],
-        nm = c("e", "p", "a")
-      )
 
-      self$transients[[lookup[[obj]]]] <- purrr::set_names(
-        x = transients[object_select],
-        nm = c("e", "p", "a")
-      )
+      if(event_type == "triple"){
+        self$transients[[lookup[[actor]]]] <- purrr::set_names(
+          x = transients[actor_select],
+          nm = c("e", "p", "a")
+        )
+
+        self$transients[[lookup[[obj]]]] <- purrr::set_names(
+          x = transients[object_select],
+          nm = c("e", "p", "a")
+        )
+      } else if (event_type == "modification"){
+        self$transients[[lookup[[actor]]]] <- purrr::set_names(
+          x = transients[mi_actor_select],
+          nm = c("e", "p", "a")
+        )
+      }
 
       return(invisible(self))
 
@@ -175,47 +222,78 @@ SituationExperimental$set(
 
     ## Case 2, else
 
-    fundamentals <- stack_abo_ratings(event, self[[actor]]$dictionary)
+    if(event_type == "triple"){
+      fundamentals <- stack_abo_ratings(event, self[[actor]]$dictionary)
+      A <- tail(self$transients[[lookup[[actor]]]], n = 1)
+      O <- tail(self$transients[[lookup[[obj]]]], n = 1)
 
-    A <- tail(self$transients[[lookup[[actor]]]], n = 1)
-    O <- tail(self$transients[[lookup[[obj]]]], n = 1)
+      if (is.null(A)) {
+        A <- self[[actor]]$dictionary |>
+          dplyr::filter(component == "identity", term == lookup[[actor]]) |>
+          dplyr::pull(ratings) |>
+          dplyr::bind_rows() ## looks weird, but works perfectly fine
+      }
 
-    if (is.null(A)) {
-      A <- self[[actor]]$dictionary |>
-        dplyr::filter(component == "identity", term == lookup[[actor]]) |>
-        dplyr::pull(ratings) |>
-        dplyr::bind_rows() ## looks weird, but works perfectly fine
+      if (is.null(O)) {
+        O <- self[[obj]]$dictionary |>
+          dplyr::filter(component == "identity", term == lookup[[obj]]) |>
+          dplyr::pull(ratings) |>
+          dplyr::bind_rows() ## looks weird, but works perfectly fine
+      }
+
+      B <- self[[actor]]$fundamentals(event$B) |>
+        dplyr::filter(component == "behavior") |>
+        dplyr::select(dplyr::all_of(c("e", "p", "a")))
+
+      colnames(A) <- paste0("A", colnames(A))
+      colnames(B) <- paste0("B", colnames(B))
+      colnames(O) <- paste0("O", colnames(O))
+
+      transients_input <- dplyr::bind_cols(A, B, O)
+
+      EQ <- self[[actor]]$equations
+
+    } else if (event_type == "modification"){
+      fundamentals <- stack_mi_ratings(event, self[[actor]]$dictionary)
+      I <- tail(self$transients[[lookup[[actor]]]], n = 1)
+
+      if (is.null(I)) {
+        I <- self[[actor]]$dictionary |>
+          dplyr::filter(component == "identity", term == lookup[[actor]]) |>
+          dplyr::pull(ratings) |>
+          dplyr::bind_rows() ## looks weird, but works perfectly fine
+      }
+
+      M <- self[[actor]]$fundamentals(event$M) |>
+        dplyr::arrange(component) |>
+        #if there is more than one entry (ie, one word is a modifier and an identity),
+        # this should get them in reverse alphabetical order, eg preferentially modifiers,
+        # then identites, then behaviors.
+        dplyr::slice_tail(n=1) |>
+        dplyr::select(dplyr::all_of(c("e", "p", "a")))
+
+      colnames(M) <- paste0("M", colnames(M))
+      colnames(I) <- paste0("I", colnames(I))
+
+      transients_input <- dplyr::bind_cols(M, I)
+
+      EQ <- self[[actor]]$get_equations(type = "traitid")
     }
 
-    if (is.null(O)) {
-      O <- self[[obj]]$dictionary |>
-        dplyr::filter(component == "identity", term == lookup[[obj]]) |>
-        dplyr::pull(ratings) |>
-        dplyr::bind_rows() ## looks weird, but works perfectly fine
-    }
-
-    B <- self[[actor]]$fundamentals(event$B) |>
-      dplyr::filter(component == "behavior") |>
-      dplyr::select(dplyr::all_of(c("e", "p", "a")))
-
-    colnames(A) <- paste0("A", colnames(A))
-    colnames(B) <- paste0("B", colnames(B))
-    colnames(O) <- paste0("O", colnames(O))
-
-    transients_input <- dplyr::bind_cols(A, B, O)
-
-    EQ <- self[[actor]]$equations
     colnames(EQ) <- substr(colnames(EQ), 1, 2)
-
     M <- get_data_matrix(transients_input, EQ)
 
     transients_out <- M %*% EQ
 
-    element_wise_deflection <- (transients_out - fundamentals)^2
-    deflection <- list(unname(rowSums(element_wise_deflection)))
-
-    names(deflection) <- "deflection"
-    deflection <- dplyr::as_tibble(deflection)
+    if(event_type == "triple"){
+      element_wise_deflection <- (transients_out - fundamentals)^2
+      deflection <- list(unname(rowSums(element_wise_deflection)))
+      names(deflection) <- "deflection"
+      deflection <- dplyr::as_tibble(deflection)
+    } else if (event_type == "modification"){
+      deflection <- tibble()
+      element_wise_deflection <- tibble()
+    }
 
     private$.add_time()
 
@@ -233,21 +311,31 @@ SituationExperimental$set(
       self$history[[x]] <- dplyr::bind_rows(self$history[[x]], out[[x]])
     }
 
-    self$transients[[lookup[[actor]]]] <- dplyr::bind_rows(
-      self$transients[[lookup[[actor]]]],
-      purrr::set_names(
-        x = out$transients[actor_select],
-        nm = c("e", "p", "a")
+    if(event_type == "triple"){
+      self$transients[[lookup[[actor]]]] <- dplyr::bind_rows(
+        self$transients[[lookup[[actor]]]],
+        purrr::set_names(
+          x = out$transients[actor_select],
+          nm = c("e", "p", "a")
+        )
       )
-    )
 
-    self$transients[[lookup[[obj]]]] <- dplyr::bind_rows(
-      self$transients[[lookup[[obj]]]],
-      purrr::set_names(
-        x = out$transients[object_select],
-        nm = c("e", "p", "a")
+      self$transients[[lookup[[obj]]]] <- dplyr::bind_rows(
+        self$transients[[lookup[[obj]]]],
+        purrr::set_names(
+          x = out$transients[object_select],
+          nm = c("e", "p", "a")
+        )
       )
-    )
+    } else if (event_type == "modification"){
+      self$transients[[lookup[[actor]]]] <- dplyr::bind_rows(
+        self$transients[[lookup[[actor]]]],
+        purrr::set_names(
+          x = out$transients[mi_actor_select],
+          nm = c("e", "p", "a")
+        )
+      )
+    }
 
     invisible(self)
 
