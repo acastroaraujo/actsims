@@ -65,7 +65,6 @@ epa_selector <- function(x = c("A", "B", "O", "I", "M")) {
 }
 
 stack_mi_ratings <- function(events, dict) {
-
   m <- dict[dict[["component"]] == "modifier", ]
   i <- dict[dict[["component"]] == "identity", ]
 
@@ -77,6 +76,35 @@ stack_mi_ratings <- function(events, dict) {
 
   out <- cbind(
     modifiers[events[["M"]], , drop = FALSE],
+    identities[events[["I"]], , drop = FALSE]
+  )
+
+  rownames(out) <- NULL
+  colnames(out) <- paste0(rep(c("M", "I"), each = 3), rep(c("e", "p", "a"), times = 2))
+
+  return(out)
+
+}
+
+
+stack_mi_ratings_identsasmods <- function(events, dict) {
+  #output the same as above, but this version will not insist that all modifiers be labeled as modifiers in the dictionary
+  m <- dict[dict[["component"]] == "modifier", ]
+  i <- dict[dict[["component"]] == "identity", ]
+
+  identities <- purrr::set_names(i[["ratings"]], nm = i[["term"]]) |>
+    do.call(what = "rbind")
+
+  modifiers <- purrr::set_names(m[["ratings"]], nm = m[["term"]]) |>
+    do.call(what = "rbind")
+
+  idents_thatarenot_mods <- identities[!rownames(identities) %in% rownames(modifiers), , drop = FALSE]
+
+  #if something is both an identity and a modifier, it will preferentially get values for the modifier version
+  all <- rbind(modifiers, idents_thatarenot_mods)
+
+  out <- cbind(
+    all[events[["M"]], , drop = FALSE],
     identities[events[["I"]], , drop = FALSE]
   )
 

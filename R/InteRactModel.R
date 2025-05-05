@@ -680,10 +680,10 @@ InteRactModel$set("public", name = "characteristic_emotion", value = characteris
 #'
 modifier_deflection <- function(events) {
 
-  events <- validate_mi_events(events, private$.dictionary)
+  events <- validate_mi_events(events, private$.dictionary, validate_mod_components = FALSE)
   validate_modify_identity(names(events))
 
-  fundamentals <- stack_mi_ratings(events, private$.dictionary)
+  fundamentals <- stack_mi_ratings_identsasmods(events, private$.dictionary)
   fundamentals <- as.data.frame(fundamentals)
 
   M <- get_data_matrix(fundamentals, private$.traitid)

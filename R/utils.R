@@ -318,15 +318,16 @@ validate_mi_events <- function(events, dict, validate_mod_components = TRUE) {
 
   } else {
     # EXPERIMENTAL. check that the modifier terms are present in the dictionary, but don't insist that their component be "modifier."
+    # also allow the component to be identity
     # the idea is that applying an identity label, eg, calling someone a "friend," can also be a form of modifier
-    dict_terms <- dict[['term']]
+    dict_terms <- dict[dict$component %in% c("identity", "modifier"), ][['term']]
 
     terms <- unique(events[["M"]])
     i <- terms %in% dict_terms
     ok <- all(i)
 
     if (!ok) {
-      cli::cli_abort("`{terms[!i]} is not in `$dictionary`", call = NULL)
+      cli::cli_abort("`{terms[!i]} is not a `modifier` or an `identity` in `$dictionary`", call = NULL)
     }
   }
 
