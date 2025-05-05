@@ -289,7 +289,7 @@ validate_emotionid_equations <- function(x) {
 }
 
 
-validate_mi_events <- function(events, dict) {
+validate_mi_events <- function(events, dict, validate_mod_components = TRUE) {
 
   ok <- all(purrr::map_lgl(events, is.character))
   if (!ok) { ## avoid subsetting with factors [!]
@@ -297,22 +297,37 @@ validate_mi_events <- function(events, dict) {
   }
 
   identities <- dict[dict$component == "identity", ][["term"]]
-  modifiers <- dict[dict$component == "modifier", ][["term"]]
-
-  terms <- unique(events[["M"]])
-  i <- terms %in% modifiers
-  ok <- all(i)
-
-  if (!ok) {
-    cli::cli_abort("`{terms[!i]} is not a `modifier` in `$dictionary`", call = NULL)
-  }
-
   terms <- unique(events[["I"]])
   i <- terms %in% identities
   ok <- all(i)
 
   if (!ok) {
     cli::cli_abort("`{terms[!i]} is not an `identity` in `$dictionary`", call = NULL)
+  }
+
+  if(validate_mod_components){
+    modifiers <- dict[dict$component == "modifier", ][["term"]]
+
+    terms <- unique(events[["M"]])
+    i <- terms %in% modifiers
+    ok <- all(i)
+
+    if (!ok) {
+      cli::cli_abort("`{terms[!i]} is not a `modifier` in `$dictionary`", call = NULL)
+    }
+
+  } else {
+    # EXPERIMENTAL. check that the modifier terms are present in the dictionary, but don't insist that their component be "modifier."
+    # the idea is that applying an identity label, eg, calling someone a "friend," can also be a form of modifier
+    dict_terms <- dict[['term']]
+
+    terms <- unique(events[["M"]])
+    i <- terms %in% dict_terms
+    ok <- all(i)
+
+    if (!ok) {
+      cli::cli_abort("`{terms[!i]} is not in `$dictionary`", call = NULL)
+    }
   }
 
   return(events)
