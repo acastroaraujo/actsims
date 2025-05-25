@@ -98,7 +98,11 @@ stack_mi_ratings_identsasmods <- function(events, dict) {
   modifiers <- purrr::set_names(m[["ratings"]], nm = m[["term"]]) |>
     do.call(what = "rbind")
 
-  idents_thatarenot_mods <- identities[!rownames(identities) %in% rownames(modifiers), , drop = FALSE]
+  idents_thatarenot_mods <- dplyr::anti_join(i, dplyr::select(m, term))
+
+  idents_thatarenot_mods <- purrr::set_names(idents_thatarenot_mods[["ratings"]],
+                                             nm = idents_thatarenot_mods[["term"]]) |>
+    do.call(what = "rbind")
 
   #if something is both an identity and a modifier, it will preferentially get values for the modifier version
   all <- rbind(modifiers, idents_thatarenot_mods)
