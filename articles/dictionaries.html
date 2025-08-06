@@ -97,11 +97,11 @@ dictionary that don’t have a match in the
 <span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="va">new_rows</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Rows: 4,496</span></span>
 <span><span class="co">#&gt; Columns: 5</span></span>
-<span><span class="co">#&gt; $ term      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "27_year_old", "abandon", "abandoned", "abash", "abbot", "ab…</span></span>
-<span><span class="co">#&gt; $ component <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "identity", "behavior", "modifier", "behavior", "identity", …</span></span>
-<span><span class="co">#&gt; $ ratings   <span style="color: #949494; font-style: italic;">&lt;list&gt;</span> &lt;0.49, -1.24, 0.70&gt;, &lt;-3.00, 0.11, -0.27&gt;, &lt;-2.95, -0.68, -…</span></span>
-<span><span class="co">#&gt; $ n         <span style="color: #949494; font-style: italic;">&lt;list&gt;</span> &lt;<span style="color: #BB0000;">NA</span>, <span style="color: #BB0000;">NA</span>, <span style="color: #BB0000;">NA</span>&gt;, &lt;<span style="color: #BB0000;">NA</span>, <span style="color: #BB0000;">NA</span>, <span style="color: #BB0000;">NA</span>&gt;, &lt;<span style="color: #BB0000;">NA</span>, <span style="color: #BB0000;">NA</span>, <span style="color: #BB0000;">NA</span>&gt;, &lt;<span style="color: #BB0000;">NA</span>, <span style="color: #BB0000;">NA</span>, <span style="color: #BB0000;">NA</span>&gt;, &lt;<span style="color: #BB0000;">NA</span>…</span></span>
-<span><span class="co">#&gt; $ sd        <span style="color: #949494; font-style: italic;">&lt;list&gt;</span> &lt;0.14, 0.17, 0.17&gt;, &lt;0.26, 0.10, 0.13&gt;, &lt;0.25, 0.15, 0.18&gt;,…</span></span>
+<span><span class="co">#&gt; $ term      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "27_year_old"<span style="color: #949494;">, </span>"abandon"<span style="color: #949494;">, </span>"abandoned"<span style="color: #949494;">, </span>"abash"<span style="color: #949494;">, </span>"abbot"<span style="color: #949494;">, </span>"ab…</span></span>
+<span><span class="co">#&gt; $ component <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "identity"<span style="color: #949494;">, </span>"behavior"<span style="color: #949494;">, </span>"modifier"<span style="color: #949494;">, </span>"behavior"<span style="color: #949494;">, </span>"identity"<span style="color: #949494;">, </span>…</span></span>
+<span><span class="co">#&gt; $ ratings   <span style="color: #949494; font-style: italic;">&lt;list&gt;</span> &lt;0.49, -1.24, 0.70&gt;<span style="color: #949494;">, </span>&lt;-3.00, 0.11, -0.27&gt;<span style="color: #949494;">, </span>&lt;-2.95, -0.68, -…</span></span>
+<span><span class="co">#&gt; $ n         <span style="color: #949494; font-style: italic;">&lt;list&gt;</span> &lt;<span style="color: #BB0000;">NA</span>, <span style="color: #BB0000;">NA</span>, <span style="color: #BB0000;">NA</span>&gt;<span style="color: #949494;">, </span>&lt;<span style="color: #BB0000;">NA</span>, <span style="color: #BB0000;">NA</span>, <span style="color: #BB0000;">NA</span>&gt;<span style="color: #949494;">, </span>&lt;<span style="color: #BB0000;">NA</span>, <span style="color: #BB0000;">NA</span>, <span style="color: #BB0000;">NA</span>&gt;<span style="color: #949494;">, </span>&lt;<span style="color: #BB0000;">NA</span>, <span style="color: #BB0000;">NA</span>, <span style="color: #BB0000;">NA</span>&gt;<span style="color: #949494;">, </span>&lt;<span style="color: #BB0000;">NA</span>…</span></span>
+<span><span class="co">#&gt; $ sd        <span style="color: #949494; font-style: italic;">&lt;list&gt;</span> &lt;0.14, 0.17, 0.17&gt;<span style="color: #949494;">, </span>&lt;0.26, 0.10, 0.13&gt;<span style="color: #949494;">, </span>&lt;0.25, 0.15, 0.18&gt;<span style="color: #949494;">,</span>…</span></span>
 <span></span>
 <span><span class="va">act</span><span class="op">$</span><span class="va">dictionary</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="va">act</span><span class="op">$</span><span class="va">dictionary</span>, <span class="va">new_rows</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> added new dictionary</span></span>
@@ -150,17 +150,17 @@ and identities.</p>
 <span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="va">new_identities</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Rows: 900</span></span>
 <span><span class="co">#&gt; Columns: 2</span></span>
-<span><span class="co">#&gt; $ M <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "big", "big", "big", "big", "big", "big", "big", "big", "big", "big"…</span></span>
-<span><span class="co">#&gt; $ I <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "air_force_officer", "baby", "bohemian", "boyfriend", "capitalist", …</span></span>
+<span><span class="co">#&gt; $ M <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "big"<span style="color: #949494;">, </span>"big"<span style="color: #949494;">, </span>"big"<span style="color: #949494;">, </span>"big"<span style="color: #949494;">, </span>"big"<span style="color: #949494;">, </span>"big"<span style="color: #949494;">, </span>"big"<span style="color: #949494;">, </span>"big"<span style="color: #949494;">, </span>"big"<span style="color: #949494;">, </span>"big"…</span></span>
+<span><span class="co">#&gt; $ I <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "air_force_officer"<span style="color: #949494;">, </span>"baby"<span style="color: #949494;">, </span>"bohemian"<span style="color: #949494;">, </span>"boyfriend"<span style="color: #949494;">, </span>"capitalist"<span style="color: #949494;">, </span>…</span></span>
 <span></span>
 <span><span class="va">new_rows</span> <span class="op">&lt;-</span> <span class="va">act</span><span class="op">$</span><span class="fu">modify_identity</span><span class="op">(</span><span class="va">new_identities</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://pillar.r-lib.org/reference/glimpse.html" class="external-link">glimpse</a></span><span class="op">(</span><span class="va">new_rows</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Rows: 900</span></span>
 <span><span class="co">#&gt; Columns: 3</span></span>
-<span><span class="co">#&gt; $ term      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "big__air_force_officer", "big__baby", "big__bohemian", "big…</span></span>
-<span><span class="co">#&gt; $ component <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "identity", "identity", "identity", "identity", "identity", …</span></span>
-<span><span class="co">#&gt; $ ratings   <span style="color: #949494; font-style: italic;">&lt;list&gt;</span> &lt;0.345404, 2.553300, 1.026200&gt;, &lt;0.5281, -0.3843, 1.1042&gt;, …</span></span></code></pre></div>
+<span><span class="co">#&gt; $ term      <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "big__air_force_officer"<span style="color: #949494;">, </span>"big__baby"<span style="color: #949494;">, </span>"big__bohemian"<span style="color: #949494;">, </span>"big…</span></span>
+<span><span class="co">#&gt; $ component <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> "identity"<span style="color: #949494;">, </span>"identity"<span style="color: #949494;">, </span>"identity"<span style="color: #949494;">, </span>"identity"<span style="color: #949494;">, </span>"identity"<span style="color: #949494;">, </span>…</span></span>
+<span><span class="co">#&gt; $ ratings   <span style="color: #949494; font-style: italic;">&lt;list&gt;</span> &lt;0.345404, 2.553300, 1.026200&gt;<span style="color: #949494;">, </span>&lt;0.5281, -0.3843, 1.1042&gt;<span style="color: #949494;">, </span>…</span></span></code></pre></div>
 <p>Now we just do as we did before.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">act</span><span class="op">$</span><span class="va">dictionary</span> <span class="op">&lt;-</span> <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="va">act</span><span class="op">$</span><span class="va">dictionary</span>, <span class="va">new_rows</span><span class="op">)</span></span>
@@ -183,11 +183,11 @@ and identities.</p>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by Andrés Castro Araújo, Em Maloney, Aidan Combs.</p>
+  <p>Developed by Andrés Castro Araújo.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
 </div>
 
     </footer>
