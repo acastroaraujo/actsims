@@ -4,8 +4,8 @@ Version: 0.0.0.9000
 Authors@R: c(
     person("Andrés", "Castro Araújo", role = c("aut", "cre"),
             email = "andres.castro.araujo@duke.edu"),
-    person("Em", "Maloney", role = "aut"),
-    person("Aidan", "Combs", role = "aut")
+    person("Em", "Maloney", role = "ctb"),
+    person("Aidan", "Combs", role = "ctb")
   )
 Description: inteRact, but using R6.
 License: MIT + file LICENSE
